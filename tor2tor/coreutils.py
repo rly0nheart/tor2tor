@@ -53,7 +53,7 @@ def start_tor():
             print(f"[[green]*[/]] Configured Tor binary path: {tor_path}")
             subprocess.Popen(tor_path)
         else:
-            subprocess.run(["sudo", "service", "tor", "start"])
+            subprocess.run(["service", "tor", "start"])
     except Exception as e:
         print(f"Failed to start Tor: {e}")
 
@@ -66,6 +66,6 @@ def stop_tor():
         if os.name == "nt":
             subprocess.Popen("taskkill /IM tor.exe /F")
         else:
-            subprocess.run(["sudo", "service", "tor", "stop"])
+            subprocess.run(["service", "tor", "stop"])
     except Exception as e:
         print(f"Failed to stop Tor: {e}")
