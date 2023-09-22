@@ -5,6 +5,8 @@ Capture onion services on an onion service.
 
 With **tor2tor**, you can scrape a given onion link and capture screenshots of all links available on it.
 
+# Wiki
+Refer to the [Wiki](https://github.com/rly0nheart/tor2tor) for installation instructions, in addition to all other documentation.
 ```
 Basic Usage
 ===========
