@@ -1,0 +1,32 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+include = [
+    {path = "tor2tor/data/data.json"}
+]
+name = "tor2tor"
+version = "0.1.0"
+description = "Capture screenshots of onion services on an onion service."
+authors = ["Richard Mwewa <rly0nheart@duck.com>"]
+readme = "README.md"
+license = "MIT License"
+homepage = "https://github.com/rly0nheart/tor2tor"
+repository = "https://github.com/rly0nheart/tor2tor"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Information Technology",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.9"
+rich = "*"
+selenium = "*"
+requests = "*"
+
+[tool.poetry.scripts]
+tor2tor = "tor2tor.tor2tor:start_tor2tor"
