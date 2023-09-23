@@ -7,7 +7,7 @@ include = [
     {path = "tor2tor/data/data.json"}
 ]
 name = "tor2tor"
-version = "0.1.2"
+version = "0.1.3"
 description = "Capture screenshots of onion services on an onion service."
 authors = ["Richard Mwewa <rly0nheart@duck.com>"]
 readme = "README.md"
