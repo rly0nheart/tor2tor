@@ -1,13 +1,11 @@
 import os
-import time
 import subprocess
 from datetime import datetime
 from urllib.parse import urlparse
 
 from PIL import Image
-from rich import print
 
-from .config import load_data
+from .config import load_data, log
 
 # Construct path to the user's home directory
 HOME_DIRECTORY = os.path.expanduser("~")
@@ -35,57 +33,38 @@ def path_finder(url: str):
         # Construct and create each directory from the directories list if it doesn't already exist
         os.makedirs(os.path.join(HOME_DIRECTORY, directory), exist_ok=True)
 
-def format_time_difference(current_time: float, past_time: float) -> string:
-    """
-    Format the time difference between the current time and a past time.
-    
-    :param current_time: (float) The current time as a Unix timestamp.
-    :param past_time: (float) The past time as a Unix timestamp.
-    :return: A string representing the time difference in a human-readable format.
-    """
-    
-    # Calculate the time difference in seconds
-    time_difference = int(current_time - past_time)
-    
-    # If the time difference is less than 1 second, return "now"
-    if time_difference < 1:
-        return "now"
-    
-    # If the time difference is less than 60 seconds, return in seconds
-    if time_difference < 60:
-        return f"{time_difference} seconds ago"
-    
-    # Convert time difference to minutes and check if less than 60 minutes
-    minutes = time_difference // 60
-    if minutes < 60:
-        return f"{minutes} minutes ago"
-    
-    # Convert time difference to hours and check if less than 24 hours
-    hours = minutes // 60
-    if hours < 24:
-        return f"{hours} hours ago"
 
-    # For times older than a day, return the exact date and time
-    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(past_time))
-    
-    
+def convert_timestamp(timestamp: float) -> str:
+    """
+    Converts a Unix timestamp to a formatted datetime string.
+
+    :param timestamp: The Unix timestamp to be converted.
+    :return: A formatted time string in the format hh:mm:ssAM/PM".
+    """
+    utc_from_timestamp = datetime.utcfromtimestamp(timestamp)
+    time_object = utc_from_timestamp.strftime("%I:%M:%S %p")
+    return time_object
+
+
 def get_file_info(filename: str) -> tuple:
-  """
-  Gets a given file's information.
-  
-  :param filename: File to get info for.
-  :return: A tuple containing the file's dimensions, size and last modified time.
-  """
-  dimensions = None
-  with Image.open(filename) as image:
-      dimensions = image.size
-      
-  file_size = os.path.getsize(filename)
-  last_modified_time = format_time_difference(current_time=time.time(), past_time=os.path.getmtime(filename))
-  
-  return dimensions, file_size, last_modified_time
-  
-  
+    """
+    Gets a given file's information.
+
+    :param filename: File to get info for.
+    :return: A tuple containing the file's dimensions, size and last modified time.
+    """
+    with Image.open(filename) as image:
+        dimensions = image.size
+
+    file_size = os.path.getsize(filename=filename)
+
+    last_modified_time = convert_timestamp(
+        timestamp=os.path.getmtime(filename=filename)
+    )
+
+    return dimensions, file_size, last_modified_time
+
+
 def clear_screen():  # -> a cleared screen
     """
     Clear the terminal screen/
@@ -104,12 +83,12 @@ def start_tor():
     tor_path = load_data().get("tor-path")
     try:
         if os.name == "nt":
-            print(f"[[green]*[/]] Configured Tor binary path: {tor_path}")
+            log.info(f"Configured tor.exe path: [link file://{tor_path}]{tor_path}")
             subprocess.Popen(tor_path)
         else:
             subprocess.run(["service", "tor", "start"])
     except Exception as e:
-        print(f"Failed to start Tor: {e}")
+        log.error(f"Failed to start [link file://{tor_path}]{tor_path}: {e}")
 
 
 def stop_tor():
@@ -122,4 +101,4 @@ def stop_tor():
         else:
             subprocess.run(["service", "tor", "stop"])
     except Exception as e:
-        print(f"Failed to stop Tor: {e}")
+        log.error(f"Failed to stop tor.exe: {e}")
