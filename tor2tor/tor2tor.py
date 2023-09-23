@@ -14,6 +14,7 @@ from .config import create_parser, update_tor_path
 from .coreutils import (
     clear_screen,
     construct_output_name,
+    get_file_info,
     path_finder,
     HOME_DIRECTORY,
     start_tor,
@@ -38,6 +39,7 @@ def capture_onion(
     onion_index,
     driver: webdriver,
     arguments: argparse,
+    table: Table
 ):
     """
     Captures a screenshot of a given onion link using a webdriver.
@@ -73,7 +75,10 @@ def capture_onion(
     print(
         f"[[green]+[/]] {onion_index} [dim]{driver.title}[/]: [italic][link file://{filename}]{filename}[/]"
     )
-
+    
+    dimensions, file_size, last_modified_time = get_file_info(filename: file_path)
+    table.add_row(str(onion_index), filename, str(dimensions), str(file_size), last_modified_time)
+    
     # Open the image if the 'open' argument is True
     if arguments.open:
         url_image = Image.open(file_path, "r")
@@ -219,6 +224,12 @@ def start_tor2tor():
         driver = webdriver.Firefox(options=options)
 
         # Loop through each onion URL to capture it
+        screenshots_table = Table(show_header=True, header_style="bold white")
+        screenshots_table.add_column("#", style="dim")
+        screenshots_table.add_column("filename")
+        screenshots_table.add_column("dimensions")
+        screenshots_table.add_column("size")
+        screenshots_table.add_column("last modified")
         for idx, onion in enumerate(onions, start=1):
             try:
                 capture_onion(
@@ -226,6 +237,7 @@ def start_tor2tor():
                     onion_index=idx,
                     driver=driver,
                     arguments=args,
+                    table: screenshots_table
                 )
                 online_onions.append(onion)
                 if idx == args.limit:
@@ -238,7 +250,8 @@ def start_tor2tor():
         # Quit the webdriver and stop Tor
         driver.quit()
         stop_tor()
-
+        
+        print(screenshots_table)
         # Display the summary
         print(f"{'-'*50}")
         print(f"[[green]+[/]] Available onions: {len(online_onions)}")
