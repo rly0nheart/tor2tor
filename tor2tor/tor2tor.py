@@ -1,5 +1,6 @@
 import os
 import re
+import time
 from datetime import datetime
 
 import requests
@@ -13,6 +14,7 @@ from selenium.webdriver.firefox.options import Options
 from .config import args, log, update_tor_path
 from .coreutils import (
     clear_screen,
+    add_http_to_link,
     construct_output_name,
     get_file_info,
     path_finder,
@@ -29,22 +31,17 @@ def create_table(table_headers: list) -> Table:
     :param table_headers: The column headers to add to the Table.
     :returns: A table with added column headers.
     """
-    table = Table(show_header=True, header_style="bold white")
+    table = Table(
+        title=f"Screenshots",
+        title_style="italic",
+        caption=f"{time.asctime()}",
+        caption_style="italic",
+        show_header=True,
+        header_style="bold white",
+    )
     for header in table_headers:
         table.add_column(header, style="dim" if header == "#" else "")
     return table
-
-
-def add_http_to_link(link: str) -> str:
-    """
-    Adds 'http://' to the URL if it doesn't already start with 'http://' or 'https://'.
-
-    :param link: The link to modify.
-    :return: The modified URL.
-    """
-    if not link.startswith(("http://", "https://")):
-        return f"http://{link}"
-    return link
 
 
 def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
@@ -54,6 +51,7 @@ def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
     :param onion_url: The onion URL to capture.
     :param onion_index: The index of the onion link in a list or sequence.
     :param driver: The webdriver instance to use for capturing the screenshot.
+    :param table: Table to add captured screenshots to.
     """
 
     # Construct the directory name based on the URL
@@ -69,31 +67,36 @@ def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
     file_path = os.path.join(HOME_DIRECTORY, "tor2tor", directory_name, filename)
 
     # Log the onion link being captured
-    log.info(f"Capturing... {onion_index} {validated_onion_link}")
+    log.info(f"{onion_index} Capturing... {validated_onion_link}")
 
     # Navigate to the URL
     driver.get(validated_onion_link)
 
-    # Take a screenshot
-    driver.save_full_page_screenshot(file_path)
+    if os.path.exists(path=file_path):
+        log.info(f"[yellow][italic]{filename}[/][/] already exists.")
+    else:
+        # Take a screenshot
+        driver.save_full_page_screenshot(file_path)
 
-    # Log the successful capture
-    log.info(f"[dim]{driver.title}[/] - [italic][link file://{filename}]{filename}[/]")
+        # Log the successful capture
+        log.info(
+            f"[dim]{driver.title}[/] - [yellow][italic][link file://{filename}]{filename}[/][/]"
+        )
 
-    # Add screenshot info to the Table
-    dimensions, file_size, last_modified_time = get_file_info(filename=file_path)
-    table.add_row(
-        str(onion_index),
-        f"[yellow]{filename}[/]",
-        f"[purple]{dimensions}[/]",
-        f"[cyan]{file_size}[/]",
-        f"[blue]{last_modified_time}[/]",
-    )
+        # Add screenshot info to the Table
+        dimensions, file_size, last_modified_time = get_file_info(filename=file_path)
+        table.add_row(
+            str(onion_index),
+            f"[yellow][italic]{filename}[/][/]",
+            f"[purple]{dimensions}[/]",
+            f"[cyan]{file_size}[/]",
+            f"[blue]{last_modified_time}[/]",
+        )
 
-    # Open the image if the 'open' argument is True
-    if args.open:
-        url_image = Image.open(file_path, "r")
-        url_image.show()
+        # Open the image if the 'open' argument is True
+        if args.open:
+            url_image = Image.open(file_path, "r")
+            url_image.show()
 
 
 def get_onion_response(onion_url: str) -> BeautifulSoup:
@@ -259,12 +262,14 @@ def start_tor2tor():
                 log.warning(f"{idx} Skipped [yellow]{e}[/]")
                 continue
 
+        print("\n")
         # Quit the webdriver and stop Tor
         driver.quit()
         stop_tor()
 
         # Print table showing captured onions
         print(screenshots_table)
+        print("\n")
 
         # Display the summary
         log.info(f"Captured: {len(online_onions)}")
