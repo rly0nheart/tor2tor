@@ -5,8 +5,15 @@
 
 **tor2tor** scrapes a given onion link and captures screenshots of all links available on it.
 
-# Wiki
+## Wiki
 Refer to the [Wiki](https://github.com/rly0nheart/tor2tor/wiki) for installation instructions, in addition to all other documentation.
+
+## CI/CD Workflow
+
+### Docker Image Building
+
+- Pushing to or merging into the `latest` branch triggers an automatic build of the Docker image.
+- This image is tagged as `latest` on Docker Hub, indicating it's the most stable release.
 
 <a href="https://www.buymeacoffee.com/_rly0nheart"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=_rly0nheart&button_colour=40DCA5&font_colour=ffffff&font_family=Comic&outline_colour=000000&coffee_colour=FFDD00" /></a>
 
