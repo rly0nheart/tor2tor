@@ -1,8 +1,10 @@
 import os
 import json
+import logging
 import argparse
 
-from rich import print
+from rich.logging import RichHandler
+
 from . import __author__, __about__, __version__
 
 CURRENT_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -13,24 +15,24 @@ def usage():
     return """
     Basic Usage
     ===========
-        tor2tor --url <onion url without http:// or https://>
+        tor2tor --url http://example.onion
 
 
     Other Examples
     ==============
             Configure the tor.exe binary (for Windows systems)
             --------------------------------------------------
-            tor2tor --tor <C:\\path\\to\\tor.exe>
+            tor2tor --tor C:\\path\\to\\tor.exe
 
 
             Run with headless Firefox
             -------------------------
-            tor2tor --headless --url <onion url without http:// or https://>
+            tor2tor --headless --url http://example.onion
             
             
             Open each image on capture
             --------------------------
-            tor2tor --open --url <onion url without http:// or https://>
+            tor2tor --open --url http://example.onion
     """
 
 
@@ -38,7 +40,7 @@ def create_parser():
     parser = argparse.ArgumentParser(
         description=f"tor2tor - by {__author__} | {__about__}",
         usage=usage(),
-        epilog="Capture onion services on a given onion service.",
+        epilog="Capture screenshots of onion services on an onion service.",
     )
     parser.add_argument("-u", "--url", help="onion url to scrape")
     parser.add_argument(
@@ -58,8 +60,28 @@ def create_parser():
         "--tor",
         help="specify the path to the tor.exe binary (for windows systems)",
     )
+    parser.add_argument(
+        "-d", "--debug", help="run program in debug mode", action="store_true"
+    )
     parser.add_argument("-v", "--version", version=__version__, action="version")
     return parser
+
+
+def set_loglevel(debug_mode: bool) -> logging.getLogger:
+    """
+    Configure and return a logging object with the specified log level.
+
+    :param debug_mode: If True, the log level is set to "NOTSET". Otherwise, it is set to "INFO".
+    :return: A logging object configured with the specified log level.
+    """
+    logging.basicConfig(
+        level="NOTSET" if debug_mode else "INFO",
+        format="%(message)s",
+        handlers=[
+            RichHandler(markup=True, log_time_format="%I:%M:%S %p", show_level=False)
+        ],
+    )
+    return logging.getLogger("Tor2Tor")
 
 
 def load_data() -> dict:
@@ -96,4 +118,9 @@ def update_tor_path(tor_path: str):
     data = load_data()
     data["tor-path"] = tor_path.replace("\\", "/")
     write_tor_path(data=data)
-    print(f"[[green]+[/]] Updated tor.exe binary path: {data}")
+    log.info(f"tor.exe path updated: {data}")
+
+
+# Parse command-line arguments
+args = create_parser().parse_args()
+log = set_loglevel(debug_mode=args.debug)
