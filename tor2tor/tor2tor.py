@@ -1,16 +1,16 @@
 import os
 import re
-import argparse
 from datetime import datetime
 
 import requests
 from PIL import Image
 from rich import print
+from rich.table import Table
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
-from .config import create_parser, update_tor_path
+from .config import args, log, update_tor_path
 from .coreutils import (
     clear_screen,
     construct_output_name,
@@ -20,6 +20,19 @@ from .coreutils import (
     start_tor,
     stop_tor,
 )
+
+
+def create_table(table_headers: list) -> Table:
+    """
+    Creates a rich table with the given column headers.
+
+    :param table_headers: The column headers to add to the Table.
+    :returns: A table with added column headers.
+    """
+    table = Table(show_header=True, header_style="bold white")
+    for header in table_headers:
+        table.add_column(header, style="dim" if header == "#" else "")
+    return table
 
 
 def add_http_to_link(link: str) -> str:
@@ -34,24 +47,17 @@ def add_http_to_link(link: str) -> str:
     return link
 
 
-def capture_onion(
-    onion_url: str,
-    onion_index,
-    driver: webdriver,
-    arguments: argparse,
-    table: Table
-):
+def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
     """
     Captures a screenshot of a given onion link using a webdriver.
 
     :param onion_url: The onion URL to capture.
     :param onion_index: The index of the onion link in a list or sequence.
     :param driver: The webdriver instance to use for capturing the screenshot.
-    :param arguments: Command-line arguments parsed using argparse.
     """
 
     # Construct the directory name based on the URL
-    directory_name = construct_output_name(url=arguments.url)
+    directory_name = construct_output_name(url=args.url)
 
     # Add HTTP to the URL if it's not already there
     validated_onion_link = add_http_to_link(link=onion_url)
@@ -63,7 +69,7 @@ def capture_onion(
     file_path = os.path.join(HOME_DIRECTORY, "tor2tor", directory_name, filename)
 
     # Log the onion link being captured
-    print(f"[[blue]*[/]] {onion_index} Capturing: {validated_onion_link}")
+    log.info(f"Capturing... {onion_index} {validated_onion_link}")
 
     # Navigate to the URL
     driver.get(validated_onion_link)
@@ -72,15 +78,20 @@ def capture_onion(
     driver.save_full_page_screenshot(file_path)
 
     # Log the successful capture
-    print(
-        f"[[green]+[/]] {onion_index} [dim]{driver.title}[/]: [italic][link file://{filename}]{filename}[/]"
+    log.info(f"[dim]{driver.title}[/] - [italic][link file://{filename}]{filename}[/]")
+
+    # Add screenshot info to the Table
+    dimensions, file_size, last_modified_time = get_file_info(filename=file_path)
+    table.add_row(
+        str(onion_index),
+        f"[yellow]{filename}[/]",
+        f"[purple]{dimensions}[/]",
+        f"[cyan]{file_size}[/]",
+        f"[blue]{last_modified_time}[/]",
     )
-    
-    dimensions, file_size, last_modified_time = get_file_info(filename: file_path)
-    table.add_row(str(onion_index), filename, str(dimensions), str(file_size), last_modified_time)
-    
+
     # Open the image if the 'open' argument is True
-    if arguments.open:
+    if args.open:
         url_image = Image.open(file_path, "r")
         url_image.show()
 
@@ -108,9 +119,9 @@ def get_onion_response(onion_url: str) -> BeautifulSoup:
 
         return soup
     except KeyboardInterrupt:
-        print(f"[[yellow]-[/]] User Interruption detected ([yellow]Ctrl+C[/])")
+        log.warning(f"User Interruption detected ([yellow]Ctrl+C[/])")
     except Exception as e:
-        print(f"[[red]X[/]] An error occurred: [red]{e}[/]")
+        log.error(f"[[red]X[/]] An error occurred: [red]{e}[/]")
 
 
 def is_well_formed_onion(onion_link: str) -> bool:
@@ -171,14 +182,14 @@ def get_onions_on_page(onion_url: str) -> list:
                 for url in urls:
                     valid_urls.append(url)
 
-        print(f"[[blue]+[/]] Found {len(valid_urls)} links on {onion_url}")
+        log.info(f"Found {len(valid_urls)} links on {onion_url}")
 
         return valid_urls
 
     except KeyboardInterrupt:
-        print(f"[[yellow]-[/]] User Interruption detected ([yellow]Ctrl+C[/])")
+        log.warning(f"User Interruption detected ([yellow]Ctrl+C[/])")
     except Exception as e:
-        print(f"[[red]X[/]] An error occurred: [red]{e}[/]")
+        log.error(f"An error occurred: [red]{e}[/]")
 
 
 def start_tor2tor():
@@ -193,18 +204,15 @@ def start_tor2tor():
     offline_onions = []
     online_onions = []
 
-    # Parse command-line arguments
-    args = create_parser().parse_args()
-
     # Record the start time for performance measurement
     start_time = datetime.now()
 
     # Check if a URL is provided for scraping
     if args.url:
         path_finder(url=args.url)
-        start_tor()
 
         clear_screen()
+        start_tor()
 
         # Fetch onion URLs from the provided URL
         onions = get_onions_on_page(onion_url=add_http_to_link(link=args.url))
@@ -223,46 +231,51 @@ def start_tor2tor():
         # Initialize the webdriver
         driver = webdriver.Firefox(options=options)
 
-        # Loop through each onion URL to capture it
-        screenshots_table = Table(show_header=True, header_style="bold white")
-        screenshots_table.add_column("#", style="dim")
-        screenshots_table.add_column("filename")
-        screenshots_table.add_column("dimensions")
-        screenshots_table.add_column("size")
-        screenshots_table.add_column("last modified")
+        # Create a table where capture screenshots will be displayed
+        screenshots_table = create_table(
+            table_headers=[
+                "#",
+                "filename",
+                "dimensions",
+                "size (bytes)",
+                "created",
+            ]
+        )
+
+        # Loop through each onion URL and capture it
         for idx, onion in enumerate(onions, start=1):
             try:
                 capture_onion(
                     onion_url=onion,
                     onion_index=idx,
                     driver=driver,
-                    arguments=args,
-                    table: screenshots_table
+                    table=screenshots_table,
                 )
                 online_onions.append(onion)
                 if idx == args.limit:
                     break
             except Exception as e:
                 offline_onions.append(onion)
-                print(f"[[yellow]*[/]] {idx} Unavailable/Skipping: [yellow]{e}[/]")
+                log.warning(f"{idx} Skipped [yellow]{e}[/]")
                 continue
 
         # Quit the webdriver and stop Tor
         driver.quit()
         stop_tor()
-        
+
+        # Print table showing captured onions
         print(screenshots_table)
+
         # Display the summary
-        print(f"{'-'*50}")
-        print(f"[[green]+[/]] Available onions: {len(online_onions)}")
-        print(f"[[yellow]-[/]] Unavailable/Skipped onions: {len(offline_onions)}")
-        print(f"[[green]*[/]] Finished in {datetime.now() - start_time} seconds.")
+        log.info(f"Captured: {len(online_onions)}")
+        log.info(f"Skipped: {len(offline_onions)}")
+        log.info(f"Finished in {datetime.now() - start_time} seconds.")
 
     # Handle the --tor argument for Windows systems
     elif args.tor:
         if os.name == "nt":
             update_tor_path(tor_path=args.tor)
         else:
-            print(
+            log.warning(
                 f"t/--tor argument is not required on {os.name} systems, only the tor package is needed."
             )
