@@ -11,6 +11,18 @@ from .config import load_data, log
 HOME_DIRECTORY = os.path.expanduser("~")
 
 
+def add_http_to_link(link: str) -> str:
+    """
+    Adds 'http://' to the URL if it doesn't already start with 'http://' or 'https://'.
+
+    :param link: The link to modify.
+    :return: The modified URL.
+    """
+    if not link.startswith(("http://", "https://")):
+        return f"http://{link}"
+    return link
+
+
 def construct_output_name(url: str) -> str:
     """
     Constructs an output name based on the network location part (netloc) of a given URL.
