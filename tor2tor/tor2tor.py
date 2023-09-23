@@ -145,8 +145,6 @@ def get_onions_on_page(onion_url: str) -> list:
     - `\S+`: Matches one or more non-whitespace characters.
     """
 
-    print(f"[[green]~[/]] Scraping: {onion_url}")
-
     # Initialize an empty list to store valid URLs
     valid_urls = []
 
@@ -168,7 +166,7 @@ def get_onions_on_page(onion_url: str) -> list:
                 for url in urls:
                     valid_urls.append(url)
 
-        print(f"[[blue]+[/]] Found {len(valid_urls)} links.")
+        print(f"[[blue]+[/]] Found {len(valid_urls)} links on {onion_url}")
 
         return valid_urls
 
