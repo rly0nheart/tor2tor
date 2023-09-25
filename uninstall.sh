@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 rm /bin/geckodriver -v
 apt remove tor --autoremove --purge -y
