@@ -170,25 +170,19 @@ def get_onion_response(onion_url: str) -> BeautifulSoup:
     :return: A BeautifulSoup object containing the parsed HTML content.
     """
 
-    try:
-        # Define the SOCKS5 proxy settings
-        proxies = {
-            "http": "socks5h://localhost:9050",
-            "https": "socks5h://localhost:9050",
-        }
+    # Define the SOCKS5 proxy settings
+    proxies = {
+        "http": "socks5h://localhost:9050",
+        "https": "socks5h://localhost:9050",
+    }
 
-        # Perform the HTTP GET request
-        response = requests.get(onion_url, proxies=proxies)
+    # Perform the HTTP GET request
+    response = requests.get(onion_url, proxies=proxies)
 
-        # Parse the HTML content using BeautifulSoup
-        soup = BeautifulSoup(response.content, "html.parser")
+    # Parse the HTML content using BeautifulSoup
+    soup = BeautifulSoup(response.content, "html.parser")
 
-        return soup
-    except KeyboardInterrupt:
-        log.warning(f"User Interruption detected ([yellow]Ctrl+C[/])")
-        exit()
-    except Exception as e:
-        log.error(f"[[red]X[/]] An error occurred: [red]{e}[/]")
+    return soup
 
 
 def get_onions_on_page(onion_url: str) -> list:
@@ -208,33 +202,26 @@ def get_onions_on_page(onion_url: str) -> list:
     # Initialize an empty list to store valid URLs
     valid_urls = []
 
-    try:
-        # Fetch the page content
-        page_content = get_onion_response(onion_url=onion_url)
+    # Fetch the page content
+    page_content = get_onion_response(onion_url=onion_url)
 
-        # Define the regex pattern to match URLs
-        url_pattern = re.compile(r"https?://\S+")
+    # Define the regex pattern to match URLs
+    url_pattern = re.compile(r"https?://\S+")
 
-        # Find all <a> tags in the HTML content
-        found_onions = page_content.find_all("a")
+    # Find all <a> tags in the HTML content
+    found_onions = page_content.find_all("a")
 
-        # Loop through each <a> tag and extract the href attribute
-        for onion_index, onion in enumerate(found_onions, start=1):
-            href = onion.get("href")
-            if href:
-                urls = url_pattern.findall(href)
-                for url in urls:
-                    valid_urls.append(url)
+    # Loop through each <a> tag and extract the href attribute
+    for onion_index, onion in enumerate(found_onions, start=1):
+        href = onion.get("href")
+        if href:
+            urls = url_pattern.findall(href)
+            for url in urls:
+                valid_urls.append(url)
 
-        log.info(f"Found {len(valid_urls)} links on {onion_url}")
 
-        return valid_urls
-
-    except KeyboardInterrupt:
-        log.warning(f"User Interruption detected ([yellow]Ctrl+C[/])")
-        exit()
-    except Exception as e:
-        log.error(f"An error occurred: [red]{e}[/]")
+    log.info(f"Found {len(valid_urls)} links on {onion_url}")
+    return valid_urls
 
 
 def start():
@@ -300,6 +287,7 @@ def start():
         exit()
     except Exception as e:
         log.error(f"An error occurred: [red]{e}[/]")
+        exit()
     finally:
         tor_service(command="stop")
         if firefox_pool is not None:

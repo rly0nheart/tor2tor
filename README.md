@@ -1,4 +1,9 @@
-![tor2tor](https://github.com/rly0nheart/tor2tor/assets/74001397/79043034-06e5-4689-8dcb-66f4c4b359b0)
+```
+ __               ______ __
+|  |_.-----.----.|__    |  |_.-----.----.
+|   _|  _  |   _||    __|   _|  _  |   _|
+|____|_____|__|  |______|____|_____|__|
+```
 
 **tor2tor** scrapes a given onion link and captures screenshots of all links available on it.
 
