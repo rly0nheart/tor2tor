@@ -6,7 +6,6 @@ from queue import Queue
 from threading import Lock, Thread
 
 import requests
-from PIL import Image
 from rich import print
 from rich.table import Table
 from bs4 import BeautifulSoup
@@ -15,6 +14,7 @@ from selenium.webdriver.firefox.options import Options
 
 from .coreutils import args, log, __version__, check_updates
 from .coreutils import (
+    show_banner,
     clear_screen,
     tor_service,
     add_http_to_link,
@@ -59,7 +59,7 @@ def open_firefox_pool(pool_size: int) -> Queue:
     # Initialize a new queue to hold the Firefox instances.
     pool = Queue()
 
-    log.info(f"Opening pool with {args.pool_size} WebDriver instances...")
+    log.info(f"Opening WebDriver pool with {args.pool_size} instances...")
 
     # Populate the pool with Firefox instances.
     for _ in range(pool_size):  # Create 3 (default) instances
@@ -153,19 +153,13 @@ def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
 
         with table_lock:
             # Add screenshot info to the Table
-            dimensions, file_size, created_time = get_file_info(filename=file_path)
+            file_size, created_time = get_file_info(filename=file_path)
             table.add_row(
                 str(onion_index),
                 f"[yellow][italic]{filename}[/][/]",
-                f"[purple]{dimensions}[/]",
                 f"[cyan]{file_size}[/]",
                 f"[blue]{created_time}[/]",
             )
-
-        # Open the image if the 'open' argument is True
-        if args.open:
-            url_image = Image.open(file_path, "r")
-            url_image.show()
 
 
 def get_onion_response(onion_url: str) -> BeautifulSoup:
@@ -250,16 +244,15 @@ def start():
     firefox_pool = None  # Initialize to None so it's accessible in the finally block
     start_time = datetime.now()  # Record the start time for performance measurement
     try:
+        tor_service(command="start")  # Start the Tor service.
+
+        clear_screen()
         path_finder(
             url=args.onion
         )  # Create a directory with the onion link as the name.
-
-        clear_screen()
-        check_updates()
-
-        tor_service(command="start")  # Start the Tor service.
-
+        show_banner()
         log.info(f"Starting 🧅Tor2Tor {__version__} {time.asctime()}...")
+        check_updates()
 
         # Fetch onion URLs from the provided URL
         onions = get_onions_on_page(onion_url=add_http_to_link(link=args.onion))
@@ -268,7 +261,7 @@ def start():
 
         # Create a table where capture screenshots will be displayed
         screenshots_table = create_table(
-            table_headers=["#", "filename", "dimensions", "size (bytes)", "created"]
+            table_headers=["#", "filename", "size (bytes)", "created"]
         )
 
         # Initialize Queue and add tasks
