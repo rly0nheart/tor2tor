@@ -7,7 +7,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 import requests
-from PIL import Image
+from rich import print
 from rich.table import Table
 from rich.markdown import Markdown
 from rich.logging import RichHandler
@@ -18,18 +18,25 @@ from . import __author__, __about__, __version__
 HOME_DIRECTORY = os.path.expanduser("~")
 
 
+def show_banner():
+    """
+    Prints the program's banner with version tag.
+    """
+    print(
+        f"""
+ __               ______ __
+|  |_.-----.----.|__    |  |_.-----.----.
+|   _|  _  |   _||    __|   _|  _  |   _|
+|____|_____|__|  |______|____|_____|__|v{__version__}
+    """
+    )
+
+
 def usage():
     return """
-    Basic Usage
-    ===========
-        tor2tor http://example.onion
-
-
-    Other Examples
-    ==============
-            Open each image on capture
-            --------------------------
-            tor2tor http://example.onion --open
+    tor2tor http://example.onion
+    
+    docker run --tty --volume tor2tor http://example.onion
     """
 
 
@@ -46,13 +53,7 @@ def create_parser() -> argparse.ArgumentParser:
         action="store_true",
     )
     parser.add_argument(
-        "-l", "--limit", help="number of links to capture", type=int, default=10
-    )
-    parser.add_argument(
-        "-o",
-        "--open",
-        help="open screenshot after capture",
-        action="store_true",
+        "-l", "--limit", help="number of onion links to capture", type=int, default=10
     )
     parser.add_argument(
         "-ps",
@@ -91,8 +92,6 @@ def check_updates():
             f"Run 'pip install git+https://github.com/rly0nheart/tor2tor.git' to get the updates.\n"
         )
         release_notes = Markdown(response.get("body"))
-
-        from rich import print
 
         print(release_notes)
         print("\n")
@@ -187,16 +186,13 @@ def get_file_info(filename: str) -> tuple:
     Gets a given file's information.
 
     :param filename: File to get info for.
-    :return: A tuple containing the file's dimensions, size and created time.
+    :return: A tuple containing the file's size and created time.
     """
-    with Image.open(filename) as image:
-        dimensions = image.size
-
     file_size = os.path.getsize(filename=filename)
 
     created_time = convert_timestamp(timestamp=os.path.getmtime(filename=filename))
 
-    return dimensions, file_size, created_time
+    return file_size, created_time
 
 
 def clear_screen():  # -> a cleared screen
