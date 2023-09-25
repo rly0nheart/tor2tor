@@ -27,7 +27,7 @@
   cd tor2tor
   ```
   **3.** Run the installation script
-  > Assuming you've already made it executable with `chmod +x install.sh`
+  > Assuming you've already made it executable with `sudo chmod +x install.sh`
 
   ```commandline
   sudo ./install.sh
