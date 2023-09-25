@@ -34,8 +34,7 @@ def show_banner():
  __   ______ __   
 |  |_|__    |  |_ 
 |   _|    __|   _|
-|____|______|____|v{__version__}
-                  
+|____|______|____|v{__version__}         
     """]
 
     print(random.choice(banners))
