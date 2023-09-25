@@ -96,7 +96,7 @@ sudo tor2tor http://example.onion
   <summary>🐧 GNU/Linux</summary>
 
   ## Note ⚠️
-  > Assuming you also made it executable with `chmod +x uninstall.sh`
+  > Assuming you also made it executable with `sudo chmod +x uninstall.sh`
 
   Navigate to the `tor2tor` directory that you cloned and find `uninstall.sh` file.
   
