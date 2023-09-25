@@ -3,11 +3,8 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-include = [
-    {path = "tor2tor/data/data.json"}
-]
 name = "tor2tor"
-version = "0.3.1"
+version = "0.4.0"
 description = "Capture screenshots of onion services on an onion service."
 authors = ["Richard Mwewa <rly0nheart@duck.com>"]
 readme = "README.md"
@@ -31,4 +28,4 @@ requests = "*"
 BeautifulSoup4 = "*"
 
 [tool.poetry.scripts]
-tor2tor = "tor2tor.tor2tor:start_tor2tor"
+tor2tor = "tor2tor.tor2tor:start"
