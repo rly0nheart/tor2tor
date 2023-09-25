@@ -1,5 +1,6 @@
 import os
 import time
+import random
 import logging
 import argparse
 import subprocess
@@ -20,16 +21,23 @@ HOME_DIRECTORY = os.path.expanduser("~")
 
 def show_banner():
     """
-    Prints the program's banner with version tag.
+    Prints a random banner from a list of 2 banners.
     """
-    print(
+    banners = [
         f"""
  __               ______ __
 |  |_.-----.----.|__    |  |_.-----.----.
 |   _|  _  |   _||    __|   _|  _  |   _|
 |____|_____|__|  |______|____|_____|__|v{__version__}
-    """
-    )
+    """, 
+    f"""
+ __   ______ __   
+|  |_|__    |  |_ 
+|   _|    __|   _|
+|____|______|____|v{__version__}         
+    """]
+
+    print(random.choice(banners))
 
 
 def usage():
