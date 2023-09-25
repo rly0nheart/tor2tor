@@ -2,6 +2,8 @@ import os
 import re
 import time
 from datetime import datetime
+from queue import Queue
+from threading import Lock, Thread
 
 import requests
 from PIL import Image
@@ -11,37 +13,102 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
-from .config import args, log, update_tor_path
+from .coreutils import args, log, __version__, check_updates
 from .coreutils import (
     clear_screen,
+    tor_service,
     add_http_to_link,
     construct_output_name,
     get_file_info,
     path_finder,
+    create_table,
     HOME_DIRECTORY,
-    start_tor,
-    stop_tor,
 )
 
 
-def create_table(table_headers: list) -> Table:
-    """
-    Creates a rich table with the given column headers.
+# Create lock for logging and table updates
+log_lock = Lock()
+table_lock = Lock()
 
-    :param table_headers: The column headers to add to the Table.
-    :returns: A table with added column headers.
+
+def firefox_options() -> Options:
     """
-    table = Table(
-        title=f"Screenshots",
-        title_style="italic",
-        caption=f"{time.asctime()}",
-        caption_style="italic",
-        show_header=True,
-        header_style="bold white",
-    )
-    for header in table_headers:
-        table.add_column(header, style="dim" if header == "#" else "")
-    return table
+    Configure Firefox options for web scraping with a headless browser and Tor network settings.
+
+    :returns: A Selenium WebDriver Options object with preset configurations.
+    """
+    options = Options()
+    if args.headless:
+        options.add_argument("--headless")
+    options.set_preference("network.proxy.type", 1)
+    options.set_preference("network.proxy.socks", "127.0.0.1")
+    options.set_preference("network.proxy.socks_port", 9050)
+    options.set_preference("network.proxy.socks_version", 5)
+    options.set_preference("network.proxy.socks_remote_dns", True)
+    options.set_preference("network.dns.blockDotOnion", False)
+    return options
+
+
+def open_firefox_pool(pool_size: int) -> Queue:
+    """
+    Initializes a queue of Firefox WebDriver instances for future use.
+
+    :param pool_size: The number of Firefox instances to create.
+    :return: A queue containing the created Firefox instances.
+    """
+    # Initialize a new queue to hold the Firefox instances.
+    pool = Queue()
+
+    log.info(f"Opening pool with {args.pool_size} WebDriver instances...")
+
+    # Populate the pool with Firefox instances.
+    for _ in range(pool_size):  # Create 3 (default) instances
+        driver = webdriver.Firefox(options=firefox_options())
+        pool.put(driver)
+
+    return pool
+
+
+def close_firefox_pool(pool: Queue):
+    """
+    Closes all the Firefox instances in the pool.
+
+    :param pool: The pool containing Firefox WebDriver instances to close.
+    """
+    log.info(f"Closing WebDriver pool...")
+    while not pool.empty():
+        driver = pool.get()
+        driver.quit()
+
+
+def worker(queue: Queue, screenshots_table: Table, pool: Queue):
+    """
+    Worker function to capture screenshots of websites.
+
+    This function is intended to be used as a target for a Thread. It captures screenshots
+    of websites as tasks are fed via the queue. The function borrows a Firefox instance from
+    the pool for each task and returns it after the task is complete.
+
+    :param queue: The queue containing tasks (websites to capture).
+    :param screenshots_table: A table where captured screenshot metadata is stored.
+    :param pool: The pool of Firefox WebDriver instances.
+    """
+    # Continue working as long as the queue is not empty
+    while not queue.empty():
+        # Get a new task from the queue
+        idx, onion = queue.get()
+
+        # Borrow a Firefox instance from the pool
+        driver = pool.get()
+
+        # Capture the screenshot
+        capture_onion(onion, idx, driver, screenshots_table)
+
+        # Return the Firefox instance back to the pool
+        pool.put(driver)
+
+        # Mark the task as done
+        queue.task_done()
 
 
 def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
@@ -55,7 +122,7 @@ def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
     """
 
     # Construct the directory name based on the URL
-    directory_name = construct_output_name(url=args.url)
+    directory_name = construct_output_name(url=args.onion)
 
     # Add HTTP to the URL if it's not already there
     validated_onion_link = add_http_to_link(link=onion_url)
@@ -78,20 +145,22 @@ def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
         # Take a screenshot
         driver.save_full_page_screenshot(file_path)
 
-        # Log the successful capture
-        log.info(
-            f"[dim]{driver.title}[/] - [yellow][italic][link file://{filename}]{filename}[/][/]"
-        )
+        with log_lock:
+            # Log the successful capture
+            log.info(
+                f"[dim]{driver.title}[/] - [yellow][italic][link file://{filename}]{filename}[/][/]"
+            )
 
-        # Add screenshot info to the Table
-        dimensions, file_size, last_modified_time = get_file_info(filename=file_path)
-        table.add_row(
-            str(onion_index),
-            f"[yellow][italic]{filename}[/][/]",
-            f"[purple]{dimensions}[/]",
-            f"[cyan]{file_size}[/]",
-            f"[blue]{last_modified_time}[/]",
-        )
+        with table_lock:
+            # Add screenshot info to the Table
+            dimensions, file_size, created_time = get_file_info(filename=file_path)
+            table.add_row(
+                str(onion_index),
+                f"[yellow][italic]{filename}[/][/]",
+                f"[purple]{dimensions}[/]",
+                f"[cyan]{file_size}[/]",
+                f"[blue]{created_time}[/]",
+            )
 
         # Open the image if the 'open' argument is True
         if args.open:
@@ -123,31 +192,9 @@ def get_onion_response(onion_url: str) -> BeautifulSoup:
         return soup
     except KeyboardInterrupt:
         log.warning(f"User Interruption detected ([yellow]Ctrl+C[/])")
+        exit()
     except Exception as e:
         log.error(f"[[red]X[/]] An error occurred: [red]{e}[/]")
-
-
-def is_well_formed_onion(onion_link: str) -> bool:
-    """
-    Checks if the given URL is a well-formed onion link.
-
-    :param onion_link: The onion link to validate.
-    :return: True if the URL is a well-formed onion link, False otherwise.
-
-    Regex Explanation:
-    -----------------
-    - `^(http(s)?://)?`: Matches the start of the string, and optionally matches 'http://' or 'https://'.
-    - `[a-z0-9]+`: Matches one or more alphanumeric characters, which form the subdomain of the onion link.
-    - `\.onion`: Matches the '.onion' TLD (Top-Level Domain).
-    - `(/[^\s]*)?$`: Optionally matches a forward slash followed by zero or more non-whitespace characters,
-       and then the end of the string.
-    """
-
-    # Define the regex pattern for a well-formed onion URL
-    pattern = r"^(http(s)?://)?[a-z0-9]+\.onion(/[^\s]*)?$"
-
-    # Use regex to validate the URL
-    return bool(re.match(pattern, onion_link))
 
 
 def get_onions_on_page(onion_url: str) -> list:
@@ -191,96 +238,77 @@ def get_onions_on_page(onion_url: str) -> list:
 
     except KeyboardInterrupt:
         log.warning(f"User Interruption detected ([yellow]Ctrl+C[/])")
+        exit()
     except Exception as e:
         log.error(f"An error occurred: [red]{e}[/]")
 
 
-def start_tor2tor():
+def start():
     """
-    Starts the web scraping process to capture screenshots of onion websites.
-    It categorizes the websites into online and offline based on their availability.
-
-    Command-line arguments are parsed to set various options like headless mode, URL, etc.
+    Main entrypoint to start the web scraping process and capture screenshots of onion websites.
     """
-
-    # Lists to store online and offline onion URLs
-    offline_onions = []
-    online_onions = []
-
-    # Record the start time for performance measurement
-    start_time = datetime.now()
-
-    # Check if a URL is provided for scraping
-    if args.url:
-        path_finder(url=args.url)
+    firefox_pool = None  # Initialize to None so it's accessible in the finally block
+    start_time = datetime.now()  # Record the start time for performance measurement
+    try:
+        path_finder(
+            url=args.onion
+        )  # Create a directory with the onion link as the name.
 
         clear_screen()
-        start_tor()
+        check_updates()
+
+        tor_service(command="start")  # Start the Tor service.
+
+        log.info(f"Starting 🧅Tor2Tor {__version__} {time.asctime()}...")
 
         # Fetch onion URLs from the provided URL
-        onions = get_onions_on_page(onion_url=add_http_to_link(link=args.url))
+        onions = get_onions_on_page(onion_url=add_http_to_link(link=args.onion))
 
-        # Configure Firefox webdriver options
-        options = Options()
-        if args.headless:
-            options.add_argument("--headless")
-        options.set_preference("network.proxy.type", 1)
-        options.set_preference("network.proxy.socks", "127.0.0.1")
-        options.set_preference("network.proxy.socks_port", 9050)
-        options.set_preference("network.proxy.socks_version", 5)
-        options.set_preference("network.proxy.socks_remote_dns", True)
-        options.set_preference("network.dns.blockDotOnion", False)
-
-        # Initialize the webdriver
-        driver = webdriver.Firefox(options=options)
+        firefox_pool = open_firefox_pool(pool_size=args.pool_size)
 
         # Create a table where capture screenshots will be displayed
         screenshots_table = create_table(
-            table_headers=[
-                "#",
-                "filename",
-                "dimensions",
-                "size (bytes)",
-                "created",
-            ]
+            table_headers=["#", "filename", "dimensions", "size (bytes)", "created"]
         )
 
-        # Loop through each onion URL and capture it
+        # Initialize Queue and add tasks
+        queue = Queue()
         for idx, onion in enumerate(onions, start=1):
             try:
-                capture_onion(
-                    onion_url=onion,
-                    onion_index=idx,
-                    driver=driver,
-                    table=screenshots_table,
-                )
-                online_onions.append(onion)
-                if idx == args.limit:
+                queue.put((idx, onion))
+                if (
+                    idx == args.limit
+                ):  # If onion index is equal to the limit set in -l/--limit, break the loop.
                     break
+            except KeyboardInterrupt:
+                log.warning(f"User Interruption detected ([yellow]Ctrl+C[/])")
+                exit()
             except Exception as e:
-                offline_onions.append(onion)
                 log.warning(f"{idx} Skipped [yellow]{e}[/]")
                 continue
 
-        print("\n")
-        # Quit the webdriver and stop Tor
-        driver.quit()
-        stop_tor()
+        # Initialize threads
+        threads = []
+        for _ in range(args.workers):  # create 3 (default) worker threads
+            t = Thread(target=worker, args=(queue, screenshots_table, firefox_pool))
+            t.start()
+            threads.append(t)
+
+        # Wait for all threads to finish
+        for thread in threads:
+            thread.join()
 
         # Print table showing captured onions
         print(screenshots_table)
         print("\n")
 
-        # Display the summary
-        log.info(f"Captured: {len(online_onions)}")
-        log.info(f"Skipped: {len(offline_onions)}")
+    except KeyboardInterrupt:
+        log.warning(f"User Interruption detected ([yellow]Ctrl+C[/])")
+        exit()
+    except Exception as e:
+        log.error(f"An error occurred: [red]{e}[/]")
+    finally:
+        tor_service(command="stop")
+        if firefox_pool is not None:
+            close_firefox_pool(pool=firefox_pool)
         log.info(f"Finished in {datetime.now() - start_time} seconds.")
-
-    # Handle the --tor argument for Windows systems
-    elif args.tor:
-        if os.name == "nt":
-            update_tor_path(tor_path=args.tor)
-        else:
-            log.warning(
-                f"t/--tor argument is not required on {os.name} systems, only the tor package is needed."
-            )
