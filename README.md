@@ -1,15 +1,17 @@
+![tor2tor](https://github.com/rly0nheart/tor2tor/assets/74001397/79043034-06e5-4689-8dcb-66f4c4b359b0)
+
 **tor2tor** scrapes a given onion link and captures screenshots of all links available on it.
 
 [![Docker](https://github.com/rly0nheart/tor2tor/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/rly0nheart/tor2tor/actions/workflows/docker-publish.yml)
 [![CodeQL](https://github.com/rly0nheart/tor2tor/actions/workflows/codeql.yml/badge.svg)](https://github.com/rly0nheart/tor2tor/actions/workflows/codeql.yml)
 ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
-# Installation
+# Installation ⬇️
+## Note ⚠️
+> This assumes the Firefox browser is installed on the user's machine.
+
 <details>
   <summary>🐧 GNU/Linux</summary>
   
-   ## Note
-  > This assumes the Firefox browser is installed on the user's machine.
-
   **1.** Clone the repository
   ```
   $ git clone https://github.com/rly0nheart/tor2tor
@@ -20,7 +22,7 @@
   $ cd tor2tor
   ```
 
-  ## Note
+  ## Note ⚠️
   > From this point, make sure you've started running the commands as root or in a root shell.
 
   **3.** Run the installation script
@@ -35,7 +37,8 @@
 
 <details>
   <summary>🪟 Windows</summary>
-  
+
+  ## Note ⚠️
   > This assumes you have docker installed and running
 
   For Windows users, you can just pull the docker image from [DockerHub](https://hub.docker.com/r/rly0nheart/tor2tor) by running:
@@ -46,13 +49,17 @@
 </details>
 
 
-# Usage
+# Usage ⌨️
 <details>
   <summary>🐧 GNU/Linux</summary>
   
   If you installed the program with the `install.sh` script, then you can just run the following command to see available options and some basic usage examples:
   ```
   tor2tor --help
+  ```
+  or 
+  ```
+  t2t --help
   ```
 
 ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
@@ -71,6 +78,7 @@
   ```
   docker run --tty --volume $PWD/tor2tor:/root/tor2tor tor2tor http://example.onion
   ```
+## Note ⚠️
   > --tty Allocates a pseudo-TTY, use it to enable the container to display colours on output
   >> --volume $PWD/tor2tor:/root/tor2tor Will mount the tor2tor directory from the container to your host machine.
 
@@ -78,14 +86,16 @@
 </details>
 
 
-# Uninstalling
+# Uninstalling ❌
 <details>
   <summary>🐧 GNU/Linux</summary>
 
-  Navigate to the `tor2tor` directory that you cloned and find `uninstall.sh` file.
-
-  Run it!
+  ## Note ⚠️
   > Assuming you also made it executable with `chmod +x uninstall.sh`
+
+  Navigate to the `tor2tor` directory that you cloned and find `uninstall.sh` file.
+  
+  Run it!
   ```
   ./uninstall.sh
   ```
@@ -103,9 +113,9 @@
 ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
 </details>
 
-## CI/CD Workflow
+## CI/CD Workflow 🌊
 
-### Docker Image Building
+### Docker Image Building 📦
 
 - Pushing to or merging into the `latest` branch triggers an automatic build of the Docker image.
 - This image is tagged as `latest` on Docker Hub, indicating it's the most stable release.
