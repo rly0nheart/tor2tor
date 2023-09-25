@@ -8,8 +8,8 @@ from urllib.parse import urlparse
 
 import requests
 from PIL import Image
-from rich.markdown import Markdown
 from rich.table import Table
+from rich.markdown import Markdown
 from rich.logging import RichHandler
 
 from . import __author__, __about__, __version__
