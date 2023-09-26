@@ -12,23 +12,30 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
-from .coreutils import args, log, __version__, check_updates
 from .coreutils import (
+    log,
+    args,
+    __version__,
     show_banner,
-    clear_screen,
-    tor_service,
-    add_http_to_link,
-    construct_output_name,
-    get_file_info,
     path_finder,
+    tor_service,
     create_table,
+    check_updates,
+    get_file_info,
     HOME_DIRECTORY,
+    add_http_to_link,
+    convert_timestamp,
+    construct_output_name,
 )
 
 
-# Create lock for logging and table updates
+# Create locks for logging, table updates
 log_lock = Lock()
 table_lock = Lock()
+
+# Create queues for storing captured and skipped onions
+captured_onions_queue = Queue()
+skipped_onions_queue = Queue()
 
 
 def firefox_options() -> Options:
@@ -59,7 +66,7 @@ def open_firefox_pool(pool_size: int) -> Queue:
     # Initialize a new queue to hold the Firefox instances.
     pool = Queue()
 
-    log.info(f"Opening WebDriver pool with {args.pool_size} instances...")
+    log.info(f"Opening WebDriver pool with {args.pool} instances...")
 
     # Populate the pool with Firefox instances.
     for _ in range(pool_size):  # Create 3 (default) instances
@@ -93,19 +100,32 @@ def worker(queue: Queue, screenshots_table: Table, pool: Queue):
     :param screenshots_table: A table where captured screenshot metadata is stored.
     :param pool: The pool of Firefox WebDriver instances.
     """
+    onion_index = None
+    driver = None
+    onion = None
+
     # Continue working as long as the queue is not empty
     while not queue.empty():
         try:
             # Get a new task from the queue
-            idx, onion = queue.get()
+            onion_index, onion = queue.get()
 
             # Borrow a Firefox instance from the pool
             driver = pool.get()
 
             # Capture the screenshot
-            capture_onion(onion, idx, driver, screenshots_table)
+            capture_onion(
+                onion_url=onion,
+                onion_index=onion_index,
+                driver=driver,
+                table=screenshots_table,
+            )
+            captured_onions_queue.put(
+                (onion_index, onion, convert_timestamp(timestamp=time.time()))
+            )
 
             # On successful capture, return the Firefox instance back to the pool and mark the task as done
+            # Do the same on exception.
             pool.put(driver)
             queue.task_done()
 
@@ -113,14 +133,16 @@ def worker(queue: Queue, screenshots_table: Table, pool: Queue):
             log.warning(f"User interruption detected ([yellow]Ctrl+C[/])")
             exit()
         except Exception as e:
-            log.error(f"{idx} Skipped [yellow]{e}[/]")
+            if args.log_skipped:
+                log.error(f"{onion_index} Skipping... [yellow]{e}[/]")
 
-            # On unsuccessful capture, return the Firefox instance back to the pool and mark the task as done because it will not be used in this case.
+            # Add the skipped onion index, the onion itself, the time it was skipped, and the reason it was skipped
+            skipped_onions_queue.put(
+                (onion_index, onion, e, convert_timestamp(timestamp=time.time()))
+            )
+
             pool.put(driver)
             queue.task_done()
-
-            # Continue to the next iteration
-            continue
 
 
 def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
@@ -168,9 +190,9 @@ def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
             file_size, created_time = get_file_info(filename=file_path)
             table.add_row(
                 str(onion_index),
-                f"[yellow][italic]{filename}[/][/]",
-                f"[cyan]{file_size}[/]",
-                f"[blue]{created_time}[/]",
+                filename,
+                str(file_size),
+                created_time,
             )
 
 
@@ -235,16 +257,61 @@ def get_onions_on_page(onion_url: str) -> list:
     return valid_urls
 
 
+def onion_summary_tables(
+    captured_onions: list,
+    skipped_onions: list,
+) -> tuple:
+    """
+    Creates tables showing a summary of captured and skipped onions.
+
+    Note
+    ----
+    - The index value in the loops, holds the index of the onion in the captured/skipped onions lists
+    - And the *_onion[0] holds the index of the onion from the scraper task.
+
+    :param captured_onions: A list of tuples, each containing the captured onion url and its index
+     from the scraper task.
+    :param skipped_onions: A list of tuples, each containing the skipped onion url and its index from the scraper task.
+    :returns: A tuple containing the captured and skipped onions tables: (captured_onions_table, skipped_onions_table).
+    """
+
+    # Create a table of captured onions
+    captured_onions_table = create_table(
+        table_headers=["#", "index", "onion", "captured at"],
+    )
+    for index, captured_onion in enumerate(captured_onions, start=1):
+        captured_onions_table.add_row(
+            str(index),
+            str(captured_onion[0]),
+            str(captured_onion[1]),
+            str(captured_onion[2]),
+        )
+
+    # Create a table of skipped onions
+    skipped_onions_table = create_table(
+        table_headers=["#", "index", "onion", "reason", "timestamp"],
+    )
+    for index, skipped_onion in enumerate(skipped_onions, start=1):
+        skipped_onions_table.add_row(
+            str(index),
+            str(skipped_onion[0]),
+            str(skipped_onion[1]),
+            str(skipped_onion[2]),
+            str(skipped_onion[3]),
+        )
+
+    return captured_onions_table, skipped_onions_table
+
+
 def start():
     """
     Main entrypoint to start the web scraping process and capture screenshots of onion websites.
     """
-    firefox_pool = None  # Initialize to None so it's accessible in the finally block
+    firefox_pool = None  # Initialize to None, so it's accessible in the 'finally' block
     start_time = datetime.now()  # Record the start time for performance measurement
     try:
         tor_service(command="start")  # Start the Tor service.
 
-        clear_screen()
         path_finder(
             url=args.onion
         )  # Create a directory with the onion link as the name.
@@ -255,25 +322,26 @@ def start():
         # Fetch onion URLs from the provided URL
         onions = get_onions_on_page(onion_url=add_http_to_link(link=args.onion))
 
-        firefox_pool = open_firefox_pool(pool_size=args.pool_size)
+        firefox_pool = open_firefox_pool(pool_size=args.pool)
 
         # Create a table where capture screenshots will be displayed
         screenshots_table = create_table(
-            table_headers=["#", "filename", "size (bytes)", "created"]
+            table_title="Screenshots",
+            table_headers=["#", "filename", "size (bytes)", "created"],
         )
 
         # Initialize Queue and add tasks
         queue = Queue()
-        for idx, onion in enumerate(onions, start=1):
-            queue.put((idx, onion))
-            if (
-                idx == args.limit
-            ):  # If onion index is equal to the limit set in -l/--limit, break the loop.
+
+        for onion_index, onion in enumerate(onions, start=1):
+            queue.put((onion_index, onion))
+            if onion_index == args.limit:
+                # If onion index is equal to the limit set in -l/--limit, break the loop.
                 break
 
         # Initialize threads
         threads = []
-        for _ in range(args.workers):  # create 3 (default) worker threads
+        for _ in range(args.threads):  # create 3 (default) worker threads
             t = Thread(target=worker, args=(queue, screenshots_table, firefox_pool))
             t.start()
             threads.append(t)
@@ -284,9 +352,20 @@ def start():
 
         log.info("DONE!\n")
 
-        # Print table showing captured onions
+        # Print table showing captured screenshots
         print(screenshots_table)
         print("\n")
+
+        # Print the summary tables for captured and skipped onions
+        captured_onions, skipped_onions = onion_summary_tables(
+            captured_onions=list(captured_onions_queue.queue),
+            skipped_onions=list(skipped_onions_queue.queue),
+        )
+        log.info(f"{len(captured_onions_queue.queue)} onions captured.")
+        print(captured_onions)
+
+        log.info(f"{len(skipped_onions_queue.queue)} onions skipped.")
+        print(skipped_onions)
 
     except KeyboardInterrupt:
         log.warning(f"User Interruption detected ([yellow]Ctrl+C[/])")
@@ -295,8 +374,7 @@ def start():
         log.error(f"An error occurred: [red]{e}[/]")
         exit()
     finally:
-        tor_service(command="stop")
         if firefox_pool is not None:
             close_firefox_pool(pool=firefox_pool)
-
+        tor_service(command="stop")
         log.info(f"Stopped in {datetime.now() - start_time} seconds.")
