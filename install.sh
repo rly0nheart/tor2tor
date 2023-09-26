@@ -1,4 +1,4 @@
-#!/bin/env sh
+#!/usr/bin/env sh
 
 apt-get update && apt-get install -y --no-install-recommends tor
 
