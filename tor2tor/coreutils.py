@@ -29,13 +29,14 @@ def show_banner():
 |  |_.-----.----.|__    |  |_.-----.----.
 |   _|  _  |   _||    __|   _|  _  |   _|
 |____|_____|__|  |______|____|_____|__|v{__version__}
-    """, 
-    f"""
+    """,
+        f"""
  __   ______ __   
 |  |_|__    |  |_ 
 |   _|    __|   _|
 |____|______|____|v{__version__}         
-    """]
+    """,
+    ]
 
     print(random.choice(banners))
 
@@ -44,7 +45,7 @@ def usage():
     return """
     tor2tor http://example.onion
     
-    docker run --tty --volume tor2tor http://example.onion
+    docker run --tty --volume rly0nheart/tor2tor http://example.onion
     """
 
 
@@ -64,19 +65,24 @@ def create_parser() -> argparse.ArgumentParser:
         "-l", "--limit", help="number of onion links to capture", type=int, default=10
     )
     parser.add_argument(
-        "-ps",
-        "--pool-size",
+        "-p",
+        "--pool",
         help="size of the Firefox WebDriver instance pool (default: %(default)s)",
-        dest="pool_size",
         type=int,
         default=3,
     )
     parser.add_argument(
-        "-w",
-        "--workers",
+        "-t",
+        "--threads",
         help="number of worker threads to run (default: %(default)s)",
         type=int,
         default=3,
+    )
+    parser.add_argument(
+        "--log-skipped",
+        help="log skipped onions on output",
+        dest="log_skipped",
+        action="store_true",
     )
     parser.add_argument(
         "-d", "--debug", help="run program in debug mode", action="store_true"
@@ -116,7 +122,7 @@ def set_loglevel(debug_mode: bool) -> logging.getLogger:
         level="NOTSET" if debug_mode else "INFO",
         format="%(message)s",
         handlers=[
-            RichHandler(markup=True, log_time_format="[%I:%M:%S %p]", show_level=False)
+            RichHandler(markup=True, log_time_format="%I:%M:%S%p", show_level=False)
         ],
     )
     return logging.getLogger("Tor2Tor")
@@ -134,20 +140,22 @@ def add_http_to_link(link: str) -> str:
     return link
 
 
-def create_table(table_headers: list) -> Table:
+def create_table(table_headers: list, table_title: str = "") -> Table:
     """
     Creates a rich table with the given column headers.
 
     :param table_headers: The column headers to add to the Table.
+    :param table_title: The title of the table (an empty string is the default tile).
     :returns: A table with added column headers.
     """
     table = Table(
-        title=f"Screenshots",
+        title=table_title,
         title_style="italic",
         caption=f"{time.asctime()}",
         caption_style="italic",
         show_header=True,
-        header_style="bold white",
+        header_style="bold",
+        highlight=True,
     )
     for header in table_headers:
         table.add_column(header, style="dim" if header == "#" else "")
@@ -182,7 +190,7 @@ def convert_timestamp(timestamp: float) -> str:
     Converts a Unix timestamp to a formatted datetime string.
 
     :param timestamp: The Unix timestamp to be converted.
-    :return: A formatted time string in the format hh:mm:ssAM/PM".
+    :return: A formatted time string in the format "hh:mm:ssAM/PM".
     """
     utc_from_timestamp = datetime.utcfromtimestamp(timestamp)
     time_object = utc_from_timestamp.strftime("%I:%M:%S %p")
@@ -201,16 +209,6 @@ def get_file_info(filename: str) -> tuple:
     created_time = convert_timestamp(timestamp=os.path.getmtime(filename=filename))
 
     return file_size, created_time
-
-
-def clear_screen():  # -> a cleared screen
-    """
-    Clear the terminal screen/
-    If Operating system is Windows, uses the 'cls' command. Otherwise, uses the 'clear' command
-
-    :return: Uhh, a cleared screen? haha
-    """
-    subprocess.call("cmd.exe /c cls" if os.name == "nt" else "clear")
 
 
 def tor_service(command: str):
