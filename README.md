@@ -76,12 +76,12 @@ sudo tor2tor http://example.onion
   
   You can call the tor2tor container with `docker run`:
   ```commandline
-  docker run tor2tor --help
+  docker run rly0nheart/tor2tor --help
   ```
 
   Calling the tor2tor container with an onion url should look like this:
   ```commandline
-  docker run --tty --volume $PWD/tor2tor:/root/tor2tor tor2tor http://example.onion
+  docker run --tty --volume $PWD/tor2tor:/root/tor2tor rly0nheart/tor2tor http://example.onion
   ```
 ## Note ⚠️
   > --tty Allocates a pseudo-TTY, use it to enable the container to display colours on output
@@ -113,7 +113,7 @@ sudo tor2tor http://example.onion
 
   You can stop (if it's running) and remove the container by running:
   ```commandline
-  docker rm -f tor2tor
+  docker rm -f rly0nheart/tor2tor
   ```
 ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
 </details>

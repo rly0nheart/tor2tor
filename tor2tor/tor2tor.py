@@ -95,20 +95,32 @@ def worker(queue: Queue, screenshots_table: Table, pool: Queue):
     """
     # Continue working as long as the queue is not empty
     while not queue.empty():
-        # Get a new task from the queue
-        idx, onion = queue.get()
+        try:
+            # Get a new task from the queue
+            idx, onion = queue.get()
 
-        # Borrow a Firefox instance from the pool
-        driver = pool.get()
+            # Borrow a Firefox instance from the pool
+            driver = pool.get()
 
-        # Capture the screenshot
-        capture_onion(onion, idx, driver, screenshots_table)
+            # Capture the screenshot
+            capture_onion(onion, idx, driver, screenshots_table)
 
-        # Return the Firefox instance back to the pool
-        pool.put(driver)
+            # On successful capture, return the Firefox instance back to the pool and mark the task as done
+            pool.put(driver)
+            queue.task_done()
 
-        # Mark the task as done
-        queue.task_done()
+        except KeyboardInterrupt:
+            log.warning(f"User interruption detected ([yellow]Ctrl+C[/])")
+            exit()
+        except Exception as e:
+            log.error(f"{idx} Skipped [yellow]{e}[/]")
+
+            # On unsuccessful capture, return the Firefox instance back to the pool and mark the task as done because it will not be used in this case.
+            pool.put(driver)
+            queue.task_done()
+
+            # Continue to the next iteration
+            continue
 
 
 def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
@@ -140,7 +152,7 @@ def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
     driver.get(validated_onion_link)
 
     if os.path.exists(path=file_path):
-        log.info(f"[yellow][italic]{filename}[/][/] already exists.")
+        log.info(f"{onion_index} [yellow][italic]{filename}[/][/] already exists.")
     else:
         # Take a screenshot
         driver.save_full_page_screenshot(file_path)
@@ -148,7 +160,7 @@ def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
         with log_lock:
             # Log the successful capture
             log.info(
-                f"[dim]{driver.title}[/] - [yellow][italic][link file://{filename}]{filename}[/][/]"
+                f"{onion_index} [dim]{driver.title}[/] - [yellow][italic][link file://{filename}]{filename}[/][/]"
             )
 
         with table_lock:
@@ -169,7 +181,7 @@ def get_onion_response(onion_url: str) -> BeautifulSoup:
     :param onion_url: The onion URL to fetch the content from.
     :return: A BeautifulSoup object containing the parsed HTML content.
     """
-    
+
     # Define the SOCKS5 proxy settings
     proxies = {
         "http": "socks5h://localhost:9050",
@@ -201,7 +213,7 @@ def get_onions_on_page(onion_url: str) -> list:
 
     # Initialize an empty list to store valid URLs
     valid_urls = []
-    
+
     # Fetch the page content
     page_content = get_onion_response(onion_url=onion_url)
 
@@ -253,18 +265,11 @@ def start():
         # Initialize Queue and add tasks
         queue = Queue()
         for idx, onion in enumerate(onions, start=1):
-            try:
-                queue.put((idx, onion))
-                if (
-                    idx == args.limit
-                ):  # If onion index is equal to the limit set in -l/--limit, break the loop.
-                    break
-            except KeyboardInterrupt:
-                log.warning(f"User Interruption detected ([yellow]Ctrl+C[/])")
-                exit()
-            except Exception as e:
-                log.warning(f"{idx} Skipped [yellow]{e}[/]")
-                continue
+            queue.put((idx, onion))
+            if (
+                idx == args.limit
+            ):  # If onion index is equal to the limit set in -l/--limit, break the loop.
+                break
 
         # Initialize threads
         threads = []
@@ -276,6 +281,8 @@ def start():
         # Wait for all threads to finish
         for thread in threads:
             thread.join()
+
+        log.info("DONE!\n")
 
         # Print table showing captured onions
         print(screenshots_table)
@@ -292,4 +299,4 @@ def start():
         if firefox_pool is not None:
             close_firefox_pool(pool=firefox_pool)
 
-        log.info(f"Finished in {datetime.now() - start_time} seconds.")
+        log.info(f"Stopped in {datetime.now() - start_time} seconds.")
