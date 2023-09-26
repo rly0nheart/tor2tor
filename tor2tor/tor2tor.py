@@ -95,20 +95,27 @@ def worker(queue: Queue, screenshots_table: Table, pool: Queue):
     """
     # Continue working as long as the queue is not empty
     while not queue.empty():
-        # Get a new task from the queue
-        idx, onion = queue.get()
+        try:
+            # Get a new task from the queue
+            idx, onion = queue.get()
+            
+            # Borrow a Firefox instance from the pool
+            driver = pool.get()
+            
+            # Capture the screenshot
+            capture_onion(onion, idx, driver, screenshots_table)
 
-        # Borrow a Firefox instance from the pool
-        driver = pool.get()
+            # Return the Firefox instance back to the pool
+            pool.put(driver)
 
-        # Capture the screenshot
-        capture_onion(onion, idx, driver, screenshots_table)
-
-        # Return the Firefox instance back to the pool
-        pool.put(driver)
-
-        # Mark the task as done
-        queue.task_done()
+            # Mark the task as done
+            queue.task_done()
+        except KeyboardInterrupt:
+            log.warning(f"User interruption detected ([yellow]Ctrl+C[/])")
+            exit()
+        except Exception as e:
+            log.error(f"{idx} Skipped [yellow]{e}[/]")
+            continue
 
 
 def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
@@ -253,19 +260,12 @@ def start():
         # Initialize Queue and add tasks
         queue = Queue()
         for idx, onion in enumerate(onions, start=1):
-            try:
-                queue.put((idx, onion))
-                if (
+            queue.put((idx, onion))
+            if (
                     idx == args.limit
                 ):  # If onion index is equal to the limit set in -l/--limit, break the loop.
-                    break
-            except KeyboardInterrupt:
-                log.warning(f"User Interruption detected ([yellow]Ctrl+C[/])")
-                exit()
-            except Exception as e:
-                log.warning(f"{idx} Skipped [yellow]{e}[/]")
-                continue
-
+                break
+                    
         # Initialize threads
         threads = []
         for _ in range(args.workers):  # create 3 (default) worker threads
