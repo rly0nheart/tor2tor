@@ -26,7 +26,7 @@
   cd tor2tor
   ```
   **3.** Run the installation script
-  > Assuming you've already made it executable with `sudo chmod +x install.sh`
+  > Assuming it has already been made executable with `sudo chmod +x install.sh`
 
   ```commandline
   sudo ./install.sh
@@ -90,12 +90,50 @@ sudo tor2tor http://example.onion
 </details>
 
 
+# Updating ⬆️
+<details>
+  <summary>🏠 Local Installation</summary>
+  
+  *Tor2Tor* comes with an updating script that can be used  to get the latest updates.
+  To check for Updates or update, navigate to the cloned *tor2tor* directory and find the `update.sh` file
+  > Assuming it has already been made executable with `sudo chmod +x update.sh`
+
+  and run it
+  ```commandline
+  sudo ./update.sh
+  ```
+  The script will pull the latest changes (if any are available) then rebuild and install the package.
+
+![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+
+</details>
+
+<details>
+  <summary>🐋 Docker Container</summary>
+  
+  As for the docker container, just run the docker pull command again.
+  ```commandline
+  docker run rly0nheart/tor2tor --help
+  ```
+
+  Calling the container with an onion url should look like the following
+  ```commandline
+  docker run --tty --volume $PWD/tor2tor:/root/tor2tor rly0nheart/tor2tor http://example.onion
+  ```
+## Note ⚠️
+  > --tty Allocates a pseudo-TTY, use it to enable the container to display colours (trust me, you will need this)
+  >> --volume $PWD/tor2tor:/root/tor2tor Will mount the *tor2tor* directory from the container to your host machine's *tor2tor* directory.
+
+![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+</details>
+
+
 # Uninstalling ❌
 <details>
   <summary>🏠 Local Installation</summary>
 
   ## Note ⚠️
-  > Assuming you also made the uninstall script executable with `sudo chmod +x uninstall.sh`
+  > Assuming it has already been made executablem `222 q2111 with `sudo chmod +x uninstall.sh`
 
   Navigate to the `tor2tor` directory that you cloned and find the `uninstall.sh` file.
   
