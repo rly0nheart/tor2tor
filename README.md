@@ -1,8 +1,7 @@
 ```
- __               ______ __
-|  |_.-----.----.|__    |  |_.-----.----.
-|   _|  _  |   _||    __|   _|  _  |   _|
-|____|_____|__|  |______|____|_____|__|
+┌┬┐┌─┐┬─┐┌─┐┌┬┐┌─┐┬─┐
+ │ │ │├┬┘┌─┘ │ │ │├┬┘
+ ┴ └─┘┴└─└─┘ ┴ └─┘┴└─
 ```
 
 **Tor2Tor** scrapes a given onion link and captures screenshots of all links available on it.
@@ -123,8 +122,9 @@ As you probably already know,Tor routes data via three relays (servers) for your
 As a result, connections become slower than an ordinary connection.
 
 ## Point ⚠️
-Once you start **Tor2Tor**, give it at least 2 minutes tops to query the specified onion url and extract links from it. 
+Once you start **Tor2Tor**, give it at least 2 minutes tops to query the specified onion url and extract links from it.
 
+If you want to work around this, you can always just use a cloud shell service.
 ## CI/CD Workflow 🌊
 
 ### Docker Image Building 📦
@@ -134,3 +134,4 @@ Once you start **Tor2Tor**, give it at least 2 minutes tops to query the specifi
 
 ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
 ![me](https://github.com/rly0nheart/glyphoji/assets/74001397/e202c4c1-9a69-40c4-a4da-1e95befb08ee)
+
