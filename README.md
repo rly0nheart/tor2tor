@@ -5,7 +5,7 @@
 |____|_____|__|  |______|____|_____|__|
 ```
 
-**tor2tor** scrapes a given onion link and captures screenshots of all links available on it.
+**Tor2Tor** scrapes a given onion link and captures screenshots of all links available on it.
 
 [![Docker](https://github.com/rly0nheart/tor2tor/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/rly0nheart/tor2tor/actions/workflows/docker-publish.yml)
 [![CodeQL](https://github.com/rly0nheart/tor2tor/actions/workflows/codeql.yml/badge.svg)](https://github.com/rly0nheart/tor2tor/actions/workflows/codeql.yml)
