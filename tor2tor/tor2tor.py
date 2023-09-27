@@ -20,6 +20,7 @@ from .coreutils import (
     path_finder,
     tor_service,
     create_table,
+    check_updates,
     get_file_info,
     HOME_DIRECTORY,
     add_http_to_link,
@@ -314,6 +315,7 @@ def start():
         show_banner()
         log.info(f"Starting 🧅Tor2Tor {__version__} {start_time}...")
 
+        check_updates()
         path_finder(
             url=args.onion
         )  # Create a directory with the onion link as the name.
