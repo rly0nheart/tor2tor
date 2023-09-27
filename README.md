@@ -118,7 +118,7 @@ sudo tor2tor http://example.onion
 ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
 </details>
 
-# Important ⚠️
+# Important 🚧
 As you probably already know,Tor routes data via three relays (servers) for your privacy.
 As a result, connections become slower than an ordinary connection.
 
