@@ -24,8 +24,8 @@ from .coreutils import (
     get_file_info,
     HOME_DIRECTORY,
     add_http_to_link,
-    convert_timestamp,
     construct_output_name,
+    convert_timestamp_to_utc,
 )
 
 
@@ -121,7 +121,7 @@ def worker(queue: Queue, screenshots_table: Table, pool: Queue):
                 table=screenshots_table,
             )
             captured_onions_queue.put(
-                (onion_index, onion, convert_timestamp(timestamp=time.time()))
+                (onion_index, onion, convert_timestamp_to_utc(timestamp=time.time()))
             )
 
             # On successful capture, return the Firefox instance back to the pool and mark the task as done
@@ -138,7 +138,7 @@ def worker(queue: Queue, screenshots_table: Table, pool: Queue):
 
             # Add the skipped onion index, the onion itself, the time it was skipped, and the reason it was skipped
             skipped_onions_queue.put(
-                (onion_index, onion, e, convert_timestamp(timestamp=time.time()))
+                (onion_index, onion, e, convert_timestamp_to_utc(timestamp=time.time()))
             )
 
             pool.put(driver)
@@ -192,7 +192,7 @@ def capture_onion(onion_url: str, onion_index, driver: webdriver, table: Table):
                 str(onion_index),
                 filename,
                 str(file_size),
-                created_time,
+                str(created_time),
             )
 
 
