@@ -1,3 +1,3 @@
 __author__ = "Richard Mwewa"
 __about__ = "https://about.me/rly0nheart"
-__version__ = "0.7.0"
+__version__ = "0.7.1"

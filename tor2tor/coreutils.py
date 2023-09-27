@@ -7,8 +7,10 @@ import subprocess
 from datetime import datetime
 from urllib.parse import urlparse
 
+import requests
 from rich import print
 from rich.table import Table
+from rich.markdown import Markdown
 from rich.logging import RichHandler
 
 from . import __author__, __about__, __version__
@@ -41,6 +43,27 @@ def usage():
     
     docker run --tty --volume rly0nheart/tor2tor http://example.onion
     """
+
+
+def check_updates():
+    """
+    Checks the program's updates by comparing the current program version tag with the remote version tag from GitHub.
+    """
+    response = requests.get(
+        "https://api.github.com/repos/rly0nheart/tor2tor/releases/latest"
+    ).json()
+    remote_version = response.get("tag_name")
+
+    if remote_version != __version__:
+        log.info(
+            f"Tor2Tor version {remote_version} published at {response.get('published_at')} "
+            f"is available. Run the 'update.sh' "
+            f"script (for local installation) or re-pull the image (for docker container) "
+            f"with 'docker pull rly0nheart/tor2tor' to get the updates. "
+        )
+        release_notes = Markdown(response.get("body"))
+        print(release_notes)
+        print("\n")
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -159,16 +182,15 @@ def path_finder(url: str):
         os.makedirs(os.path.join(HOME_DIRECTORY, directory), exist_ok=True)
 
 
-def convert_timestamp(timestamp: float) -> str:
+def convert_timestamp_to_utc(timestamp: float) -> datetime:
     """
-    Converts a Unix timestamp to a formatted datetime string.
+    Converts a Unix timestamp to a datetime object in UTC.
 
-    :param timestamp: The Unix timestamp to be converted.
-    :return: A formatted time string in the format "hh:mm:ssAM/PM".
+    :param timestamp: The Unix timestamp to be converted, given as a float.
+    :return: A datetime object representing the converted time in UTC.
     """
     utc_from_timestamp = datetime.utcfromtimestamp(timestamp)
-    time_object = utc_from_timestamp.strftime("%I:%M:%S %p")
-    return time_object
+    return utc_from_timestamp
 
 
 def get_file_info(filename: str) -> tuple:
@@ -180,7 +202,9 @@ def get_file_info(filename: str) -> tuple:
     """
     file_size = os.path.getsize(filename=filename)
 
-    created_time = convert_timestamp(timestamp=os.path.getmtime(filename=filename))
+    created_time = convert_timestamp_to_utc(
+        timestamp=os.path.getmtime(filename=filename)
+    )
 
     return file_size, created_time
 
