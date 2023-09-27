@@ -55,6 +55,12 @@ def check_updates():
     remote_version = response.get("tag_name")
 
     if remote_version != __version__:
+        log.info(
+            f"Tor2Tor version {remote_version} published at {response.get('published_at')} "
+            f"is available. Run the 'update.sh' "
+            f"script (for local installation) or re-pull the image (for docker container) "
+            f"with 'docker pull rly0nheart/tor2tor' to get the updates. "
+        )
         release_notes = Markdown(response.get("body"))
         print(release_notes)
         print("\n")
