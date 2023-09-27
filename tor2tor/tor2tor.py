@@ -316,7 +316,7 @@ def start():
             url=args.onion
         )  # Create a directory with the onion link as the name.
         show_banner()
-        log.info(f"Starting 🧅Tor2Tor {__version__} {time.asctime()}...")
+        log.info(f"Starting 🧅Tor2Tor {__version__} {time.asctime()}")
         check_updates()
 
         # Fetch onion URLs from the provided URL
