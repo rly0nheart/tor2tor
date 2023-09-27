@@ -7,8 +7,10 @@ import subprocess
 from datetime import datetime
 from urllib.parse import urlparse
 
+import requests
 from rich import print
 from rich.table import Table
+from rich.markdown import Markdown
 from rich.logging import RichHandler
 
 from . import __author__, __about__, __version__
@@ -41,6 +43,21 @@ def usage():
     
     docker run --tty --volume rly0nheart/tor2tor http://example.onion
     """
+
+
+def check_updates():
+    """
+    Checks the program's updates by comparing the current program version tag with the remote version tag from GitHub.
+    """
+    response = requests.get(
+        "https://api.github.com/repos/rly0nheart/tor2tor/releases/latest"
+    ).json()
+    remote_version = response.get("tag_name")
+
+    if remote_version != __version__:
+        release_notes = Markdown(response.get("body"))
+        print(release_notes)
+        print("\n")
 
 
 def create_parser() -> argparse.ArgumentParser:
