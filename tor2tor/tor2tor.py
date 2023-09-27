@@ -281,10 +281,10 @@ def onion_summary_tables(
     )
     for index, captured_onion in enumerate(captured_onions, start=1):
         captured_onions_table.add_row(
-            str(index),
-            str(captured_onion[0]),
-            str(captured_onion[1]),
-            str(captured_onion[2]),
+            str(index), # Index of the onion from the captured_onions list
+            str(captured_onion[0]), # Index of the onion from the scraping task
+            str(captured_onion[1]), # Onion url
+            str(captured_onion[2]), # Time the onion was captured
         )
 
     # Create a table of skipped onions
@@ -293,11 +293,11 @@ def onion_summary_tables(
     )
     for index, skipped_onion in enumerate(skipped_onions, start=1):
         skipped_onions_table.add_row(
-            str(index),
-            str(skipped_onion[0]),
-            str(skipped_onion[1]),
-            str(skipped_onion[2]),
-            str(skipped_onion[3]),
+            str(index), # Index of the onion from the skipped_onions list 
+            str(skipped_onion[0]), # Index of the onion from the scraping task
+            str(skipped_onion[1]), # Onion url
+            str(skipped_onion[2]), # Reason the onion was skipped
+            str(skipped_onion[3]), # Time the onion was skipped
         )
 
     return captured_onions_table, skipped_onions_table
@@ -316,7 +316,7 @@ def start():
             url=args.onion
         )  # Create a directory with the onion link as the name.
         show_banner()
-        log.info(f"Starting 🧅Tor2Tor {__version__} {time.asctime()}...")
+        log.info(f"Starting 🧅Tor2Tor {__version__} {time.asctime()}")
         check_updates()
 
         # Fetch onion URLs from the provided URL
