@@ -118,6 +118,13 @@ sudo tor2tor http://example.onion
 ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
 </details>
 
+# Important ⚠️
+As you probably already know,Tor routes data via three relays (servers) for your privacy.
+As a result, connections become slower than an ordinary connection.
+
+## Point ⚠️
+Once you start **Tor2Tor**, give it at least 2 minutes tops to query the specified onion url and extract links from it. 
+
 ## CI/CD Workflow 🌊
 
 ### Docker Image Building 📦
