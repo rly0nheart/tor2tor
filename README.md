@@ -14,7 +14,7 @@
 > This assumes the Firefox browser is installed on the user's machine.
 
 <details>
-  <summary>🐧 GNU/Linux</summary>
+  <summary>🏠 Local</summary>
   
   **1.** Clone the repository
   ```commandline
@@ -36,12 +36,12 @@
 </details>
 
 <details>
-  <summary>🪟 Windows</summary>
+  <summary>🐋 Docker Image</summary>
 
   ## Note ⚠️
   > This assumes you have docker installed and running
 
-  For Windows users, you can just pull the docker image from [DockerHub](https://hub.docker.com/r/rly0nheart/tor2tor) by running:
+   You can just pull the docker image from [DockerHub](https://hub.docker.com/r/rly0nheart/tor2tor) by running:
   ```commandline
   docker pull rly0nheart/tor2tor
   ```
@@ -51,9 +51,9 @@
 
 # Usage ⌨️
 <details>
-  <summary>🐧 GNU/Linux</summary>
+  <summary>🏠 Local Installation</summary>
   
-  If you installed the program with the `install.sh` script, then you can just run the following command to see available options and some basic usage examples:
+  To see available options/usage, call *Tor2Tor* with the `-h/--help` flag
   ```commandline
   tor2tor --help
   ```
@@ -61,7 +61,7 @@
   ```commandline
   t2t --help
   ```
-Calling it with an onion url should look like this:
+Calling it with an onion url should look like the following
 ```commandline
 sudo tor2tor http://example.onion
 ```
@@ -71,20 +71,20 @@ sudo tor2tor http://example.onion
 </details>
 
 <details>
-  <summary>📦 Docker Container</summary>
+  <summary>🐋 Docker Container</summary>
   
-  You can call the tor2tor container with `docker run`:
+  The *Tor2Tor* container can be called with `docker run` like so:
   ```commandline
   docker run rly0nheart/tor2tor --help
   ```
 
-  Calling the tor2tor container with an onion url should look like this:
+  Calling the container with an onion url should look like the following
   ```commandline
   docker run --tty --volume $PWD/tor2tor:/root/tor2tor rly0nheart/tor2tor http://example.onion
   ```
 ## Note ⚠️
-  > --tty Allocates a pseudo-TTY, use it to enable the container to display colours on output
-  >> --volume $PWD/tor2tor:/root/tor2tor Will mount the tor2tor directory from the container to your host machine.
+  > --tty Allocates a pseudo-TTY, use it to enable the container to display colours (trust me, you will need this)
+  >> --volume $PWD/tor2tor:/root/tor2tor Will mount the *tor2tor* directory from the container to your host machine's *tor2tor* directory.
 
 ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
 </details>
@@ -92,12 +92,12 @@ sudo tor2tor http://example.onion
 
 # Uninstalling ❌
 <details>
-  <summary>🐧 GNU/Linux</summary>
+  <summary>🏠 Local Installation</summary>
 
   ## Note ⚠️
-  > Assuming you also made it executable with `sudo chmod +x uninstall.sh`
+  > Assuming you also made the uninstall script executable with `sudo chmod +x uninstall.sh`
 
-  Navigate to the `tor2tor` directory that you cloned and find `uninstall.sh` file.
+  Navigate to the `tor2tor` directory that you cloned and find the `uninstall.sh` file.
   
   Run it!
   ```commandline
@@ -108,7 +108,7 @@ sudo tor2tor http://example.onion
 </details>
 
 <details>
-  <summary>📦 Docker Container</summary>
+  <summary>🐋 Docker Container</summary>
 
   You can stop (if it's running) and remove the container by running:
   ```commandline
@@ -127,7 +127,7 @@ Once you start **Tor2Tor**, give it at least 2 minutes tops to query the specifi
 If you want to work around this, you can always just use a cloud shell service.
 ## CI/CD Workflow 🌊
 
-### Docker Image Building 📦
+### Docker Image Building 🐳
 
 - Pushing to or merging into the `latest` branch triggers an automatic build of the Docker image.
 - This image is tagged as `latest` on Docker Hub, indicating it's the most stable release.
