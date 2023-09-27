@@ -182,16 +182,15 @@ def path_finder(url: str):
         os.makedirs(os.path.join(HOME_DIRECTORY, directory), exist_ok=True)
 
 
-def convert_timestamp(timestamp: float) -> str:
+def convert_timestamp_to_utc(timestamp: float) -> datetime:
     """
-    Converts a Unix timestamp to a formatted datetime string.
+    Converts a Unix timestamp to a datetime object in UTC.
 
-    :param timestamp: The Unix timestamp to be converted.
-    :return: A formatted time string in the format "hh:mm:ssAM/PM".
+    :param timestamp: The Unix timestamp to be converted, given as a float.
+    :return: A datetime object representing the converted time in UTC.
     """
     utc_from_timestamp = datetime.utcfromtimestamp(timestamp)
-    time_object = utc_from_timestamp.strftime("%I:%M:%S %p")
-    return time_object
+    return utc_from_timestamp
 
 
 def get_file_info(filename: str) -> tuple:
@@ -203,7 +202,9 @@ def get_file_info(filename: str) -> tuple:
     """
     file_size = os.path.getsize(filename=filename)
 
-    created_time = convert_timestamp(timestamp=os.path.getmtime(filename=filename))
+    created_time = convert_timestamp_to_utc(
+        timestamp=os.path.getmtime(filename=filename)
+    )
 
     return file_size, created_time
 
