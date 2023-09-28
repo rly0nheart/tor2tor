@@ -117,9 +117,9 @@ def add_http_to_link(link: str) -> str:
     return link
 
 
-def is_onion(url: str) -> bool:
+def is_valid_onion(url: str) -> bool:
     """
-    Uses a regex pattern to determine whether a given url is an onion service or not.
+    Uses a regex pattern to determine whether a given url is a valid onion url/link or not.
 
     :param url: The url to check.
     :return: True if the url matches parts of the pattern criterion.
