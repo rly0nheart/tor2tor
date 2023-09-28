@@ -15,7 +15,6 @@ from selenium.webdriver.firefox.options import Options
 from .coreutils import (
     log,
     args,
-    is_onion,
     __version__,
     show_banner,
     path_finder,
@@ -23,6 +22,7 @@ from .coreutils import (
     create_table,
     check_updates,
     get_file_info,
+    is_valid_onion,
     HOME_DIRECTORY,
     add_http_to_link,
     construct_output_name,
@@ -320,7 +320,7 @@ def start_capturing():
     start_time = datetime.now()  # Record the start time for performance measurement
     target_onion_url = args.onion
 
-    if is_onion(url=target_onion_url):
+    if is_valid_onion(url=target_onion_url):
         try:
             tor_service(command="start")  # Start the Tor service.
 
