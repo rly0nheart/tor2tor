@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import random
 import logging
@@ -19,51 +20,12 @@ from . import __author__, __about__, __version__
 HOME_DIRECTORY = os.path.expanduser("~")
 
 
-def show_banner():
-    """
-    Prints a random banner from a list of 2 banners.
-    """
-    banners = [
-        f"""
-┌┬┐┌─┐┬─┐┌─┐┌┬┐┌─┐┬─┐
- │ │ │├┬┘┌─┘ │ │ │├┬┘
- ┴ └─┘┴└─└─┘ ┴ └─┘┴└─ {__version__}""",
-        f"""
-┌┬┐┌─┐┌┬┐
- │ ┌─┘ │ 
- ┴ └─┘ ┴ {__version__}""",
-    ]
-
-    print(random.choice(banners))
-
-
 def usage():
     return """
     tor2tor http://example.onion
     
     docker run --tty --volume rly0nheart/tor2tor http://example.onion
     """
-
-
-def check_updates():
-    """
-    Checks the program's updates by comparing the current program version tag with the remote version tag from GitHub.
-    """
-    response = requests.get(
-        "https://api.github.com/repos/rly0nheart/tor2tor/releases/latest"
-    ).json()
-    remote_version = response.get("tag_name")
-
-    if remote_version != __version__:
-        log.info(
-            f"Tor2Tor version {remote_version} published at {response.get('published_at')} "
-            f"is available. Run the 'update.sh' "
-            f"script (for local installation) or re-pull the image (for docker container) "
-            f"with 'docker pull rly0nheart/tor2tor' to get the updates. "
-        )
-        release_notes = Markdown(response.get("body"))
-        print(release_notes)
-        print("\n")
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -108,6 +70,24 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def show_banner():
+    """
+    Prints a random banner from a list of 2 banners.
+    """
+    banners = [
+        f"""
+┌┬┐┌─┐┬─┐┌─┐┌┬┐┌─┐┬─┐
+ │ │ │├┬┘┌─┘ │ │ │├┬┘
+ ┴ └─┘┴└─└─┘ ┴ └─┘┴└─ {__version__}""",
+        f"""
+┌┬┐┌─┐┌┬┐
+ │ ┌─┘ │ 
+ ┴ └─┘ ┴ {__version__}""",
+    ]
+
+    print(random.choice(banners))
+
+
 def set_loglevel(debug_mode: bool) -> logging.getLogger:
     """
     Configure and return a logging object with the specified log level.
@@ -117,9 +97,9 @@ def set_loglevel(debug_mode: bool) -> logging.getLogger:
     """
     logging.basicConfig(
         level="NOTSET" if debug_mode else "INFO",
-        format="%(message)s",
+        format="%(levelname)s %(message)s",
         handlers=[
-            RichHandler(markup=True, log_time_format="%I:%M:%S%p", show_level=False)
+            RichHandler(markup=True, log_time_format="%H:%M:%S", show_level=False)
         ],
     )
     return logging.getLogger("Tor2Tor")
@@ -135,6 +115,40 @@ def add_http_to_link(link: str) -> str:
     if not link.startswith(("http://", "https://")):
         return f"http://{link}"
     return link
+
+
+def is_valid_onion(url: str) -> bool:
+    """
+    Uses a regex pattern to determine whether a given url is an onion service or not.
+
+    :param url: The url to check.
+    :return: True if the url matches the strict pattern criterion. False if it doesn't
+
+    Regex Explanation
+    -----------------
+    - ^ - Asserts the start of a string.
+    - (http://|https://)? - Matches HTTP or HTTPS protocol in the string (optional).
+    - [a-z2-7]{56,} - Matches 56 or more characters, where each can be a lowercase letter or a digit from 2 to 7.
+    - d\\.onion - Matches the letter "d" followed by .onion.
+    - (/|$) - Matches either a forward slash or the end of the string.
+    """
+    if re.search(r"^(http://|https://)?[a-z2-7]{56,}d\.onion(/|$)", url):
+        return True
+    else:
+        return False
+
+
+def has_desktop_environment() -> bool:
+    """
+    Checks if current system has a desktop environment.
+
+    :return: True if system has a desktop environment. False if it doesn't.
+
+    Note
+    ----
+    This is not completely reliable at all. (open for improvements)
+    """
+    return "DISPLAY" in os.environ
 
 
 def create_table(table_headers: list, table_title: str = "") -> Table:
@@ -207,6 +221,27 @@ def get_file_info(filename: str) -> tuple:
     )
 
     return file_size, created_time
+
+
+def check_updates():
+    """
+    Checks the program's updates by comparing the current program version tag with the remote version tag from GitHub.
+    """
+    response = requests.get(
+        "https://api.github.com/repos/rly0nheart/tor2tor/releases/latest"
+    ).json()
+    remote_version = response.get("tag_name")
+
+    if remote_version != __version__:
+        log.info(
+            f"Tor2Tor version {remote_version} published at {response.get('published_at')} "
+            f"is available. Run the 'update.sh' "
+            f"script (for local installation) or re-pull the image (for docker container) "
+            f"with 'docker pull rly0nheart/tor2tor' to get the updates. "
+        )
+        release_notes = Markdown(response.get("body"))
+        print(release_notes)
+        print("\n")
 
 
 def tor_service(command: str):
