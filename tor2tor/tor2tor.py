@@ -40,10 +40,11 @@ captured_onions_queue = Queue()
 skipped_onions_queue = Queue()
 
 
-def firefox_options() -> Options:
+def firefox_options(instance_index: int) -> Options:
     """
     Configure Firefox options for web scraping with a headless browser and Tor network settings.
 
+    :param instance_index: Index of the opened WebDriver instance in the firefox_pool.
     :returns: A Selenium WebDriver Options object with preset configurations.
     """
     options = Options()
@@ -53,7 +54,9 @@ def firefox_options() -> Options:
         if args.headless:
             options.add_argument("--headless")
     else:
-        log.info("Running headless as default (no desktop environment found)...")
+        log.info(
+            f"Running default headless on WebDriver instance {instance_index} (no desktop environment found)..."
+        )
         options.add_argument("--headless")
 
     options.set_preference("network.proxy.type", 1)
@@ -78,8 +81,10 @@ def open_firefox_pool(pool_size: int) -> Queue:
     log.info(f"Opening WebDriver pool with {args.pool} instances...")
 
     # Populate the pool with Firefox instances.
-    for _ in range(pool_size):  # Create 3 (default) instances
-        driver = webdriver.Firefox(options=firefox_options())
+    for webdriver_instance in range(pool_size):  # Create 3 (default) instances
+        driver = webdriver.Firefox(
+            options=firefox_options(instance_index=webdriver_instance)
+        )
         pool.put(driver)
 
     return pool

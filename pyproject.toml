@@ -7,7 +7,7 @@ packages = ["tor2tor"]
 
 [project]
 name = "tor2tor"
-version = "0.8.0"
+version = "0.8.1"
 description = "Capture screenshots of onion services on an onion service."
 readme = "README.md"
 requires-python = ">=3.9"
