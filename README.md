@@ -163,6 +163,9 @@ As a result, connections become slower than an ordinary connection.
 Once you start **Tor2Tor**, give it at least 2 minutes tops to query the specified onion url and extract links from it.
 
 If you want to work around this, you can always just use a cloud shell service.
+
+# Screenshots
+There's a dedicated repository of onion screenshots captured with **Tor2Tor** at [Tor2Tor-DB](https://github.com/rly0nheart/tor2tor-db)
 ## CI/CD Workflow 🌊
 
 ### Docker Image Building 🐳
