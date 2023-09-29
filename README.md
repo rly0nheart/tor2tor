@@ -133,7 +133,7 @@ sudo tor2tor http://example.onion
   <summary>🏠 Local Installation</summary>
 
   ## Note ⚠️
-  > Assuming it has already been made executablem `222 q2111 with `sudo chmod +x uninstall.sh`
+  > Assuming it has already been made executablem with `sudo chmod +x uninstall.sh`
 
   Navigate to the `tor2tor` directory that you cloned and find the `uninstall.sh` file.
   
