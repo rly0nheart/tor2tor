@@ -128,11 +128,13 @@ def is_valid_onion(url: str) -> bool:
     -----------------
     - ^ - Asserts the start of a string.
     - (http://|https://)? - Matches HTTP or HTTPS protocol in the string (optional).
-    - [a-z2-7]{56,} - Matches 56 or more characters, where each can be a lowercase letter or a digit from 2 to 7.
-    - d\\.onion - Matches the letter "d" followed by .onion.
+    - (www\\.)? - Optionally matches the www. subdomain.
+    - ([a-z2-7]{54,}d) - Matches 55 or more characters, where each can be a lowercase letter or a digit from 2 to 7,
+      and ends with 'd'.
+    - \\.onion - Matches .onion.
     - (/|$) - Matches either a forward slash or the end of the string.
     """
-    if re.search(r"^(http://|https://)?[a-z2-7]{56,}d\.onion(/|$)", url):
+    if re.search(r"^(http://|https://)?(www\.)?([a-z2-7]{54,}d)\.onion(/|$)", url):
         return True
     else:
         return False
