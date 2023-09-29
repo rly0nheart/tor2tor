@@ -119,20 +119,20 @@ def add_http_to_link(link: str) -> str:
 
 def is_valid_onion(url: str) -> bool:
     """
-    Uses a regex pattern to determine whether a given url is a valid onion url/link or not.
+    Uses a regex pattern to determine whether a given url is an onion service or not.
 
     :param url: The url to check.
-    :return: True if the url matches parts of the pattern criterion.
+    :return: True if the url matches the strict pattern criterion. False if it doesn't
 
     Regex Explanation
     -----------------
     - ^ - Asserts the start of a string.
     - (http://|https://)? - Matches HTTP or HTTPS protocol in the string (optional).
     - [a-z2-7]{56,} - Matches 56 or more characters, where each can be a lowercase letter or a digit from 2 to 7.
-    - \\.onion - Matches the .onion top level domain.
+    - d\\.onion - Matches the letter "d" followed by .onion.
     - (/|$) - Matches either a forward slash or the end of the string.
     """
-    if re.search(r"^(http://|https://)?[a-z2-7]{56,}\.onion(/|$)", url):
+    if re.search(r"^(http://|https://)?[a-z2-7]{56,}d\.onion(/|$)", url):
         return True
     else:
         return False
