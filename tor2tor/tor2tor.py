@@ -81,9 +81,11 @@ def open_firefox_pool(pool_size: int) -> Queue:
     log.info(f"Opening WebDriver pool with {args.pool} instances...")
 
     # Populate the pool with Firefox instances.
-    for webdriver_instance in range(pool_size):  # Create 3 (default) instances
+    for instance_index, webdriver_instance in enumerate(
+        range(pool_size), start=1
+    ):  # Create 3 (default) instances
         driver = webdriver.Firefox(
-            options=firefox_options(instance_index=webdriver_instance)
+            options=firefox_options(instance_index=instance_index)
         )
         pool.put(driver)
 
@@ -124,24 +126,42 @@ def worker(queue: Queue, screenshots_table: Table, pool: Queue):
             # Get a new task from the queue
             onion_index, onion = queue.get()
 
-            # Borrow a Firefox instance from the pool
-            driver = pool.get()
+            if is_valid_onion(url=onion):
+                # Borrow a Firefox instance from the pool
+                driver = pool.get()
 
-            # Capture the screenshot
-            capture_onion(
-                onion_url=onion,
-                onion_index=onion_index,
-                driver=driver,
-                table=screenshots_table,
-            )
-            captured_onions_queue.put(
-                (onion_index, onion, convert_timestamp_to_utc(timestamp=time.time()))
-            )
+                # Capture the screenshot
+                capture_onion(
+                    onion_url=onion,
+                    onion_index=onion_index,
+                    driver=driver,
+                    table=screenshots_table,
+                )
+                captured_onions_queue.put(
+                    (
+                        onion_index,
+                        onion,
+                        convert_timestamp_to_utc(timestamp=time.time()),
+                    )
+                )
 
-            # On successful capture, return the Firefox instance back to the pool and mark the task as done
-            # Do the same on exception.
-            pool.put(driver)
-            queue.task_done()
+                # On successful capture, return the Firefox instance back to the pool and mark the task as done
+                # Do the same on exception.
+                pool.put(driver)
+                queue.task_done()
+            else:
+                log.warning(
+                    f"{onion_index} {onion} does not seem to be a valid onion. Skipping..."
+                )
+                # Add the invalid onion to the skipped_onions queue
+                skipped_onions_queue.put(
+                    (
+                        onion_index,
+                        onion,
+                        "[yellow]Invalid onion[/]",
+                        convert_timestamp_to_utc(timestamp=time.time()),
+                    )
+                )
 
         except KeyboardInterrupt:
             log.warning(f"User interruption detected ([yellow]Ctrl+C[/])")
@@ -152,7 +172,12 @@ def worker(queue: Queue, screenshots_table: Table, pool: Queue):
 
             # Add the skipped onion index, the onion itself, the time it was skipped, and the reason it was skipped
             skipped_onions_queue.put(
-                (onion_index, onion, e, convert_timestamp_to_utc(timestamp=time.time()))
+                (
+                    onion_index,
+                    onion,
+                    f"[red]{e}[/]",
+                    convert_timestamp_to_utc(timestamp=time.time()),
+                )
             )
 
             pool.put(driver)
