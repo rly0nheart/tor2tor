@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import json
 import random
 import logging
 import argparse
@@ -17,7 +18,26 @@ from rich.logging import RichHandler
 from . import __author__, __about__, __version__
 
 # Construct path to the user's home directory
-HOME_DIRECTORY = os.path.expanduser("~")
+PROGRAM_DIRECTORY = os.path.expanduser(os.path.join("~", "tor2tor"))
+
+
+def settings() -> dict:
+    """
+    Loads settings from /settings/settings.json
+
+    :return: Dictionary (JSON) containing settings
+    """
+    # Get the absolute path of the current file
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Construct the path to the settings.json file
+    settings_path = os.path.join(current_dir, "settings", "settings.json")
+
+    # Load the settings from the file
+    with open(settings_path) as file:
+        data = json.load(file)
+
+    return data
 
 
 def usage():
@@ -140,19 +160,6 @@ def is_valid_onion(url: str) -> bool:
         return False
 
 
-def has_desktop_environment() -> bool:
-    """
-    Checks if current system has a desktop environment.
-
-    :return: True if system has a desktop environment. False if it doesn't.
-
-    Note
-    ----
-    This is not completely reliable at all. (open for improvements)
-    """
-    return "DISPLAY" in os.environ
-
-
 def create_table(table_headers: list, table_title: str = "") -> Table:
     """
     Creates a rich table with the given column headers.
@@ -192,10 +199,9 @@ def path_finder(url: str):
     Checks if the specified directories exist.
     If not, it creates them.
     """
-    directories = ["tor2tor", os.path.join("tor2tor", construct_output_name(url=url))]
-    for directory in directories:
-        # Construct and create each directory from the directories list if it doesn't already exist
-        os.makedirs(os.path.join(HOME_DIRECTORY, directory), exist_ok=True)
+    os.makedirs(
+        os.path.join(PROGRAM_DIRECTORY, construct_output_name(url=url)), exist_ok=True
+    )
 
 
 def convert_timestamp_to_utc(timestamp: float) -> datetime:
@@ -248,11 +254,33 @@ def check_updates():
 
 def tor_service(command: str):
     """
-    Starts/Stops the Tor service based on the provided command.
+    Starts/Stops the Tor service based on the provided command and operating system.
 
-    :param command: A command that determines whether the tor service should be started or stopped ("start", "stop").
+    This function can start or stop the Tor service on Windows and Unix-like
+    systems. On Windows, it looks for Tor\\tor\\tor.exe in the user's home directory.
+
+    :param command: The command to manage the Tor service. Acceptable values are "start" or "stop".
+    :raise: subprocess.CalledProcessError If the subprocess fails to execute.
     """
-    subprocess.run(["service", "tor", command])
+
+    if command not in ["start", "stop"]:
+        log.warning("Command must be either 'start' or 'stop'")
+
+    try:
+        if os.name == "nt":
+            tor_path = os.path.join(os.path.expanduser("~"), settings().get("tor.exe"))
+
+            if command == "start":
+                log.info(f"Starting {tor_path}...")
+                subprocess.Popen(tor_path)
+            else:
+                subprocess.Popen("taskkill /IM tor.exe /F")
+
+        else:
+            subprocess.run(["service", "tor", command])
+
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to {command} the Tor service: {e}")
 
 
 args = create_parser().parse_args()
