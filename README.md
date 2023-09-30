@@ -14,7 +14,7 @@
 > This assumes the Firefox browser is installed on the user's machine.
 
 <details>
-  <summary>🏠 Local</summary>
+  <summary>🐧 Linux</summary>
   
   **1.** Clone the repository
   ```commandline
@@ -36,6 +36,26 @@
 </details>
 
 <details>
+  <summary>🪟 Windows</summary>
+  
+  **1.** Clone the repository
+  ```commandline
+  git clone https://github.com/rly0nheart/tor2tor
+  ```
+
+  **2.** Move to the tor2tor directory
+  ```commandline
+  cd tor2tor
+  ```
+  **3.** Run the powershell installation script
+
+  ```powershell
+  .\install.ps1
+  ```
+  The installation script will download the `tor` bundle, `geckodriver`, and install `tor2tor` together with its dependencies. The downloads will be stored in the `tor2tor` directory.
+</details>
+
+<details>
   <summary>🐋 Docker Image</summary>
 
   ## Note ⚠️
@@ -51,7 +71,7 @@
 
 # Usage ⌨️
 <details>
-  <summary>🏠 Local Installation</summary>
+  <summary>🐧 Linux</summary>
   
   To see available options/usage, call *Tor2Tor* with the `-h/--help` flag
   ```commandline
@@ -64,6 +84,26 @@
 Calling it with an onion url should look like the following
 ```commandline
 sudo tor2tor http://example.onion
+```
+
+![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+
+</details>
+
+<details>
+  <summary>🪟 Windows</summary>
+  
+  To see available options/usage, call *Tor2Tor* with the `-h/--help` flag
+  ```commandline
+  tor2tor --help
+  ```
+  or 
+  ```commandline
+  t2t --help
+  ```
+Calling it with an onion url should look like the following
+```commandline
+tor2tor http://example.onion
 ```
 
 ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
@@ -92,15 +132,30 @@ sudo tor2tor http://example.onion
 
 # Updating ⬆️
 <details>
-  <summary>🏠 Local Installation</summary>
-  
-  *Tor2Tor* comes with an updating script that can be used  to get the latest updates.
-  To check for Updates or update, navigate to the cloned *tor2tor* directory and find the `update.sh` file
-  > Assuming it has already been made executable with `sudo chmod +x update.sh`
+  <summary>🐧 Linux</summary>
+
+   [*update.sh*](https://github.com/rly0nheart/tor2tor/blob/latest/update.sh)
+   > Assuming it has already been made executable with `sudo chmod +x update.sh`
+
+   Navigate to the `tor2tor` directory that you cloned and find the `update.sh` file.
 
   and run it
   ```commandline
   sudo ./update.sh
+  ```
+  The script will pull the latest changes (if any are available) then rebuild and install the package.
+
+![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+
+</details>
+
+<details>
+  <summary>🪟 Windows</summary>
+
+   Navigate to the `tor2tor` directory that you cloned and find the `update.ps1` file.
+
+  ```powershell
+  .\update.ps1
   ```
   The script will pull the latest changes (if any are available) then rebuild and install the package.
 
@@ -130,10 +185,10 @@ sudo tor2tor http://example.onion
 
 # Uninstalling ❌
 <details>
-  <summary>🏠 Local Installation</summary>
+  <summary>🐧 Linux</summary>
 
   ## Note ⚠️
-  > Assuming it has already been made executablem with `sudo chmod +x uninstall.sh`
+  > Assuming it has already been made executable with `sudo chmod +x uninstall.sh`
 
   Navigate to the `tor2tor` directory that you cloned and find the `uninstall.sh` file.
   
@@ -142,6 +197,19 @@ sudo tor2tor http://example.onion
   sudo ./uninstall.sh
   ```
   This will uninstall `tor`, delete the `geckodriver` binary and uninstall `tor2tor`
+  ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+</details>
+
+<details>
+  <summary>🪟 Windows</summary>
+
+  Navigate to the `tor2tor` directory that you cloned and find the `uninstall.ps1` file.
+  
+  Run it!
+  ```powershell
+  .\uninstall.sh
+  ```
+  This will delete the `geckodriver` and tor binaries then uninstall `tor2tor`
   ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
 </details>
 
@@ -165,7 +233,7 @@ Once you start **Tor2Tor**, give it at least 2 minutes tops to query the specifi
 If you want to work around this, you can always just use a cloud shell service.
 
 # Screenshots
-There's a dedicated repository of onion screenshots captured with **Tor2Tor** at [Tor2Tor-DB](https://github.com/rly0nheart/tor2tor-db)
+There's a dedicated repository of onion screenshots captured with **Tor2Tor** at [Tor2Tor Archive](https://github.com/rly0nheart/tor2tor-archive)
 ## CI/CD Workflow 🌊
 
 ### Docker Image Building 🐳
