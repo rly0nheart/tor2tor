@@ -8,3 +8,4 @@ apt remove tor --autoremove --purge -y
 
 # Uninstall tor2tor
 pip3 uninstall tor2tor -y -v
+echo "Cleanup complete."
