@@ -268,7 +268,7 @@ def tor_service(command: str):
 
     try:
         if os.name == "nt":
-            tor_path = os.path.join(os.path.expanduser("~"), settings().get("tor.exe"))
+            tor_path = os.path.join(PROGRAM_DIRECTORY, settings().get("tor.exe"))
 
             if command == "start":
                 log.info(f"Starting {tor_path}...")
