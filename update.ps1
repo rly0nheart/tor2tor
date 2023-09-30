@@ -17,6 +17,7 @@ if (Test-Path ".git") {
 
         # Install tor2tor after pulling the updates
         pip3 install .
+        Write-Host "Update complete.."
     }
 } else {
     Write-Host "Current directory is not a Git repository."
