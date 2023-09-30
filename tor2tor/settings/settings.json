@@ -1,0 +1,11 @@
+{
+  "proxy": {
+    "socks5": {
+      "host": "localhost",
+      "port": 9050,
+      "type": 1,
+      "version": 5
+    }
+  },
+  "tor.exe": "Tor\\tor\\tor.exe"
+}
