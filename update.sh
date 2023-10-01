@@ -18,6 +18,7 @@ if [ -d ".git" ]; then
 
     # Install tor2tor after pulling the updates
     pip3 install .
+    echo "Update complete."
   fi
 else
   echo "Current directory is not a Git repository."

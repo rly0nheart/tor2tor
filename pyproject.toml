@@ -1,18 +1,17 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[tool.setuptools]
-packages = ["tor2tor"]
-
-[project]
+[tool.poetry]
 name = "tor2tor"
-version = "0.9.0"
+version = "0.10.0"
 description = "Capture screenshots of onion services on an onion service."
+authors = ["Richard Mwewa <rly0nheart@duck.com>"]
 readme = "README.md"
-requires-python = ">=3.9"
-license = {file = "LICENSE"}
-authors = [{name = "Richard Mwewa", email = "rly0nheart@duck.com"}]
+license = "MIT License"
+homepage = "https://hub.docker.com/r/rly0nheart/tor2tor"
+repository = "https://github.com/rly0nheart/tor2tor"
+documentation = "https://github.com/rly0nheart/tor2tor/blob/latest/README.md"
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Development Status :: 5 - Production/Stable",
@@ -22,18 +21,13 @@ classifiers = [
     "Programming Language :: Python :: 3"
 ]
 
-dependencies = [
-    "rich",
-    "requests",
-    "selenium",
-    "BeautifulSoup4",
-]
+[tool.poetry.dependencies]
+python = "^3.9"
+rich = "*"
+requests = "*"
+selenium = "*"
+BeautifulSoup4 = "*"
 
-[project.urls]
-homepage = "https://hub.docker.com/r/rly0nheart/tor2tor"
-documentation = "https://github.com/rly0nheart/tor2tor/blob/latest/README.md"
-repository = "https://github.com/rly0nheart/tor2tor"
-
-[project.scripts]
-t2t = "tor2tor.tor2tor:start_capturing"
-tor2tor = "tor2tor.tor2tor:start_capturing"
+[tool.poetry.scripts]
+t2t = "tor2tor.main:execute_tor2tor"
+tor2tor = "tor2tor.main:execute_tor2tor"
