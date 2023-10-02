@@ -1,8 +1,5 @@
-```
-┌┬┐┌─┐┬─┐┌─┐┌┬┐┌─┐┬─┐
- │ │ │├┬┘┌─┘ │ │ │├┬┘
- ┴ └─┘┴└─└─┘ ┴ └─┘┴└─
-```
+![banner](https://github.com/rly0nheart/tor2tor/assets/74001397/3ce19824-9414-4828-a770-081b0b0ae857)
+
 
 **Tor2Tor** scrapes a given onion link and captures screenshots of all links available on it.
 
