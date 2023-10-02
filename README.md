@@ -10,10 +10,7 @@
 ## Note ⚠️
 > This assumes the Firefox browser is installed on the user's machine.
 
-<details>
-  <summary>🐧 Linux</summary>
-  
-  **1.** Clone the repository
+**1.** Clone the repository
   ```commandline
   git clone https://github.com/rly0nheart/tor2tor
   ```
@@ -22,7 +19,11 @@
   ```commandline
   cd tor2tor
   ```
-  **3.** Run the installation script
+
+<details>
+  <summary>🐧 Linux</summary>
+  
+  Run the installation script
   > Assuming it has already been made executable with `sudo chmod +x install.sh`
 
   ```commandline
@@ -35,17 +36,7 @@
 <details>
   <summary>🪟 Windows</summary>
   
-  **1.** Clone the repository
-  ```commandline
-  git clone https://github.com/rly0nheart/tor2tor
-  ```
-
-  **2.** Move to the tor2tor directory
-  ```commandline
-  cd tor2tor
-  ```
-  **3.** Run the powershell installation script
-
+  Run the powershell installation script
   ```powershell
   .\install.ps1
   ```
