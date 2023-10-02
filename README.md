@@ -5,8 +5,8 @@
 
 ![Python](https://img.shields.io/badge/Python-14354C?style=flat&logo=python)
 ![Docker](https://img.shields.io/badge/Dockerfile-grey.svg?style=flat&logo=docker)
-![Shell](https://img.shields.io/badge/Shell%20Script-121011?style=flat&logo=gnu-bash)
-![Powershell](https://img.shields.io/badge/Powershell%20Script-000000?style=flat&logo=powershell)
+![Shell](https://img.shields.io/badge/Shell-121011?style=flat&logo=gnu-bash)
+![Powershell](https://img.shields.io/badge/PowerShell-000000?style=flat&logo=powershell)
 [![Docker](https://github.com/rly0nheart/tor2tor/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/rly0nheart/tor2tor/actions/workflows/docker-publish.yml)
 [![CodeQL](https://github.com/rly0nheart/tor2tor/actions/workflows/codeql.yml/badge.svg)](https://github.com/rly0nheart/tor2tor/actions/workflows/codeql.yml)
 ***
