@@ -3,17 +3,18 @@
 
 **Tor2Tor** scrapes a given onion link and captures screenshots of all links available on it.
 
+![Python](https://img.shields.io/badge/Python-14354C?style=flat&logo=python)
+![Docker](https://img.shields.io/badge/Dockerfile-grey.svg?style=flat&logo=docker)
+![Shell](https://img.shields.io/badge/Shell%20Script-121011?style=flat&logo=gnu-bash)
+![Powershell](https://img.shields.io/badge/Powershell%20Script-000000?style=flat&logo=powershell)
 [![Docker](https://github.com/rly0nheart/tor2tor/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/rly0nheart/tor2tor/actions/workflows/docker-publish.yml)
 [![CodeQL](https://github.com/rly0nheart/tor2tor/actions/workflows/codeql.yml/badge.svg)](https://github.com/rly0nheart/tor2tor/actions/workflows/codeql.yml)
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 # Installation ⬇️
 ## Note ⚠️
 > This assumes the Firefox browser is installed on the user's machine.
 
-<details>
-  <summary>🐧 Linux</summary>
-  
-  **1.** Clone the repository
+**1.** Clone the repository
   ```commandline
   git clone https://github.com/rly0nheart/tor2tor
   ```
@@ -22,30 +23,24 @@
   ```commandline
   cd tor2tor
   ```
-  **3.** Run the installation script
+
+<details>
+  <summary>🐧 Linux</summary>
+  
+  Run the installation script
   > Assuming it has already been made executable with `sudo chmod +x install.sh`
 
   ```commandline
   sudo ./install.sh
   ```
   The installation script will install `tor` then download and setup the latest version of `geckodriver`, and install `tor2tor` together with its dependencies (because we're all too lazy to manually do it)
-  ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+  ***
 </details>
 
 <details>
   <summary>🪟 Windows</summary>
   
-  **1.** Clone the repository
-  ```commandline
-  git clone https://github.com/rly0nheart/tor2tor
-  ```
-
-  **2.** Move to the tor2tor directory
-  ```commandline
-  cd tor2tor
-  ```
-  **3.** Run the powershell installation script
-
+  Run the powershell installation script
   ```powershell
   .\install.ps1
   ```
@@ -62,7 +57,7 @@
   ```commandline
   docker pull rly0nheart/tor2tor
   ```
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 </details>
 
 
@@ -83,7 +78,7 @@ Calling it with an onion url should look like the following
 sudo tor2tor http://example.onion
 ```
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 
 </details>
 
@@ -103,7 +98,7 @@ Calling it with an onion url should look like the following
 tor2tor http://example.onion
 ```
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 
 </details>
 
@@ -123,7 +118,7 @@ tor2tor http://example.onion
   > --tty Allocates a pseudo-TTY, use it to enable the container to display colours (trust me, you will need this)
   >> --volume $PWD/tor2tor:/root/tor2tor Will mount the *tor2tor* directory from the container to your host machine's *tor2tor* directory.
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 </details>
 
 
@@ -142,7 +137,7 @@ tor2tor http://example.onion
   ```
   The script will pull the latest changes (if any are available) then rebuild and install the package.
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 
 </details>
 
@@ -156,7 +151,7 @@ tor2tor http://example.onion
   ```
   The script will pull the latest changes (if any are available) then rebuild and install the package.
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 
 </details>
 
@@ -176,7 +171,7 @@ tor2tor http://example.onion
   > --tty Allocates a pseudo-TTY, use it to enable the container to display colours (trust me, you will need this)
   >> --volume $PWD/tor2tor:/root/tor2tor Will mount the *tor2tor* directory from the container to your host machine's *tor2tor* directory.
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 </details>
 
 
@@ -194,7 +189,7 @@ tor2tor http://example.onion
   sudo ./uninstall.sh
   ```
   This will uninstall `tor`, delete the `geckodriver` binary and uninstall `tor2tor`
-  ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+  ***
 </details>
 
 <details>
@@ -207,7 +202,7 @@ tor2tor http://example.onion
   .\uninstall.sh
   ```
   This will delete the `geckodriver` and tor binaries then uninstall `tor2tor`
-  ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+  ***
 </details>
 
 <details>
@@ -217,7 +212,7 @@ tor2tor http://example.onion
   ```commandline
   docker rm -f rly0nheart/tor2tor
   ```
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 </details>
 
 # Important 🚧
@@ -230,6 +225,8 @@ Once you start **Tor2Tor**, give it at least 2 minutes tops to query the specifi
 If you want to work around this, you can always just use a cloud shell service.
 
 # Screenshots
+![tor2tor-archive](https://github.com/rly0nheart/tor2tor-archive/assets/74001397/759082c5-f5ea-4b25-80da-a756d182ae86)
+
 There's a dedicated repository of onion screenshots captured with **Tor2Tor** at [Tor2Tor Archive](https://github.com/rly0nheart/tor2tor-archive)
 ## CI/CD Workflow 🌊
 
@@ -238,6 +235,8 @@ There's a dedicated repository of onion screenshots captured with **Tor2Tor** at
 - Pushing to or merging into the `latest` branch triggers an automatic build of the Docker image.
 - This image is tagged as `latest` on Docker Hub, indicating it's the most stable release.
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
-![me](https://github.com/rly0nheart/glyphoji/assets/74001397/e202c4c1-9a69-40c4-a4da-1e95befb08ee)
+***
+<a href="https://www.buymeacoffee.com/_rly0nheart"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=_rly0nheart&button_colour=40DCA5&font_colour=ffffff&font_family=Comic&outline_colour=000000&coffee_colour=FFDD00" /></a>
+
+![me](https://github.com/rly0nheart/tor2tor/assets/74001397/9f5a2b22-d98a-4be1-80be-8ad7c53c6fab)
 
