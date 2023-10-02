@@ -5,7 +5,7 @@
 
 [![Docker](https://github.com/rly0nheart/tor2tor/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/rly0nheart/tor2tor/actions/workflows/docker-publish.yml)
 [![CodeQL](https://github.com/rly0nheart/tor2tor/actions/workflows/codeql.yml/badge.svg)](https://github.com/rly0nheart/tor2tor/actions/workflows/codeql.yml)
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 # Installation ⬇️
 ## Note ⚠️
 > This assumes the Firefox browser is installed on the user's machine.
@@ -30,7 +30,7 @@
   sudo ./install.sh
   ```
   The installation script will install `tor` then download and setup the latest version of `geckodriver`, and install `tor2tor` together with its dependencies (because we're all too lazy to manually do it)
-  ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+  ***
 </details>
 
 <details>
@@ -53,7 +53,7 @@
   ```commandline
   docker pull rly0nheart/tor2tor
   ```
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 </details>
 
 
@@ -74,7 +74,7 @@ Calling it with an onion url should look like the following
 sudo tor2tor http://example.onion
 ```
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 
 </details>
 
@@ -94,7 +94,7 @@ Calling it with an onion url should look like the following
 tor2tor http://example.onion
 ```
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 
 </details>
 
@@ -114,7 +114,7 @@ tor2tor http://example.onion
   > --tty Allocates a pseudo-TTY, use it to enable the container to display colours (trust me, you will need this)
   >> --volume $PWD/tor2tor:/root/tor2tor Will mount the *tor2tor* directory from the container to your host machine's *tor2tor* directory.
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 </details>
 
 
@@ -133,7 +133,7 @@ tor2tor http://example.onion
   ```
   The script will pull the latest changes (if any are available) then rebuild and install the package.
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 
 </details>
 
@@ -147,7 +147,7 @@ tor2tor http://example.onion
   ```
   The script will pull the latest changes (if any are available) then rebuild and install the package.
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 
 </details>
 
@@ -167,7 +167,7 @@ tor2tor http://example.onion
   > --tty Allocates a pseudo-TTY, use it to enable the container to display colours (trust me, you will need this)
   >> --volume $PWD/tor2tor:/root/tor2tor Will mount the *tor2tor* directory from the container to your host machine's *tor2tor* directory.
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 </details>
 
 
@@ -185,7 +185,7 @@ tor2tor http://example.onion
   sudo ./uninstall.sh
   ```
   This will uninstall `tor`, delete the `geckodriver` binary and uninstall `tor2tor`
-  ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+  ***
 </details>
 
 <details>
@@ -198,7 +198,7 @@ tor2tor http://example.onion
   .\uninstall.sh
   ```
   This will delete the `geckodriver` and tor binaries then uninstall `tor2tor`
-  ![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+  ***
 </details>
 
 <details>
@@ -208,7 +208,7 @@ tor2tor http://example.onion
   ```commandline
   docker rm -f rly0nheart/tor2tor
   ```
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 </details>
 
 # Important 🚧
@@ -231,6 +231,6 @@ There's a dedicated repository of onion screenshots captured with **Tor2Tor** at
 - Pushing to or merging into the `latest` branch triggers an automatic build of the Docker image.
 - This image is tagged as `latest` on Docker Hub, indicating it's the most stable release.
 
-![-](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/aqua.png)
+***
 ![me](https://github.com/rly0nheart/glyphoji/assets/74001397/e202c4c1-9a69-40c4-a4da-1e95befb08ee)
 
