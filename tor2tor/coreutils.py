@@ -224,7 +224,7 @@ def get_file_info(filename: str) -> tuple:
     """
     file_size = os.path.getsize(filename=filename)
 
-    created_time = convert_timestamp_to_utc(
+    created_time = convert_timestamp_to_datetime(
         timestamp=os.path.getmtime(filename=filename)
     )
 
