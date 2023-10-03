@@ -204,15 +204,15 @@ def path_finder(url: str):
     )
 
 
-def convert_timestamp_to_utc(timestamp: float) -> datetime:
+def convert_timestamp_to_datetime(timestamp: float) -> datetime:
     """
-    Converts a Unix timestamp to a datetime object in UTC.
+    Converts a Unix timestamp to a datetime object.
 
     :param timestamp: The Unix timestamp to be converted, given as a float.
-    :return: A datetime object representing the converted time in UTC.
+    :return: A datetime object.
     """
-    utc_from_timestamp = datetime.utcfromtimestamp(timestamp)
-    return utc_from_timestamp
+    datetime_from_timestamp = datetime.fromtimestamp(timestamp)
+    return datetime_from_timestamp
 
 
 def get_file_info(filename: str) -> tuple:
