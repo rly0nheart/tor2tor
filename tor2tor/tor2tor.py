@@ -22,7 +22,7 @@ from .coreutils import (
     PROGRAM_DIRECTORY,
     add_http_to_link,
     construct_output_name,
-    convert_timestamp_to_utc,
+    convert_timestamp_to_datetime,
 )
 
 
@@ -134,7 +134,7 @@ class Tor2Tor:
                         (
                             onion_index,
                             onion,
-                            convert_timestamp_to_utc(timestamp=time.time()),
+                            convert_timestamp_to_datetime(timestamp=time.time()),
                         )
                     )
 
@@ -152,7 +152,7 @@ class Tor2Tor:
                             onion_index,
                             onion,
                             "[yellow]Invalid onion[/]",
-                            convert_timestamp_to_utc(timestamp=time.time()),
+                            convert_timestamp_to_datetime(timestamp=time.time()),
                         )
                     )
 
@@ -169,7 +169,7 @@ class Tor2Tor:
                         onion_index,
                         onion,
                         f"[red]{e}[/]",
-                        convert_timestamp_to_utc(timestamp=time.time()),
+                        convert_timestamp_to_datetime(timestamp=time.time()),
                     )
                 )
 
