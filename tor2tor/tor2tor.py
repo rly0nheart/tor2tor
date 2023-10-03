@@ -20,13 +20,13 @@ from .coreutils import (
     tor_service,
     create_table,
     load_settings,
-    check_updates,
     get_file_info,
     is_valid_onion,
     PROGRAM_DIRECTORY,
     add_http_to_link,
     construct_output_name,
-    convert_timestamp_to_datetime
+    convert_timestamp_to_datetime,
+    check_updates,
 )
 
 
@@ -122,57 +122,41 @@ class Tor2Tor:
                 # Get a new task from the queue
                 onion_index, onion = tasks_queue.get()
 
-                # If the task onion is valid, borrow a Firefox instance from the pool
-                # And try to capture it.S
-                if is_valid_onion(url=onion):
-                    driver = firefox_pool.get()
+                driver = firefox_pool.get()
 
-                    # Capture the screenshot
-                    self.capture_onion(
-                        onion_url=onion,
-                        onion_index=onion_index,
-                        driver=driver,
-                        screenshots_table=screenshots_table,
+                # Capture the screenshot
+                self.capture_onion(
+                    onion_url=onion,
+                    onion_index=onion_index,
+                    driver=driver,
+                    screenshots_table=screenshots_table,
+                )
+                self.captured_onions_queue.put(
+                    (
+                        onion_index,
+                        onion,
+                        convert_timestamp_to_datetime(timestamp=time.time()),
                     )
-                    self.captured_onions_queue.put(
-                        (
-                            onion_index,
-                            onion,
-                            convert_timestamp_to_datetime(timestamp=time.time()),
-                        )
-                    )
+                )
 
-                    # On successful capture, return the Firefox instance back to the pool and mark the task as done
-                    # Do the same on exception.
-                    firefox_pool.put(driver)
-                    tasks_queue.task_done()
-                else:
-                    log.warning(
-                        f"{onion_index} {onion} does not seem to be a valid onion. Skipping..."
-                    )
-                    # Add the invalid onion to the skipped_onions queue
-                    self.skipped_onions_queue.put(
-                        (
-                            onion_index,
-                            onion,
-                            "[yellow]Invalid onion[/]",
-                            convert_timestamp_to_datetime(timestamp=time.time()),
-                        )
-                    )
+                # On successful capture, return the Firefox instance back to the pool and mark the task as done
+                # Do the same on exception.
+                firefox_pool.put(driver)
+                tasks_queue.task_done()
 
             except KeyboardInterrupt:
                 log.warning("User interruption detected ([yellow]Ctrl+C[/])")
                 sys.exit()
             except Exception as e:
                 if args.log_skipped:
-                    log.error(f"{onion_index} Skipping... [yellow]{e}[/]")
+                    log.error(f"{onion_index} [yellow]{e}[/]")
 
                 # Add the skipped onion index, the onion itself, the time it was skipped, and the reason it was skipped
                 self.skipped_onions_queue.put(
                     (
                         onion_index,
                         onion,
-                        f"[red]{e}[/]",
+                        f"[yellow]{e}[/]",
                         convert_timestamp_to_datetime(timestamp=time.time()),
                     )
                 )
