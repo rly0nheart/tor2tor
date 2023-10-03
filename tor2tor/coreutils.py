@@ -21,7 +21,31 @@ from . import __author__, __about__, __version__
 PROGRAM_DIRECTORY = os.path.expanduser(os.path.join("~", "tor2tor"))
 
 
-def settings() -> dict:
+def show_banner():
+    """
+    Prints a random banner from a list of 4 ascii banners.
+    """
+    banners = [
+        f"""
+     ┏┓     
+╋┏┓┏┓┏┛╋┏┓┏┓
+┗┗┛┛ ┗┛┗┗┛┛ {__version__}""",
+        f"""  
+╋┏┓┏┓┓╋┏┓┏┓
+┗┗┛┛ ┗┗┗┛┛ {__version__}""",
+        f"""
+┏┳┓    ┏┓┏┳┓    
+ ┃ ┏┓┏┓┏┛ ┃ ┏┓┏┓
+ ┻ ┗┛┛ ┗┛ ┻ ┗┛┛ {__version__}""",
+        f"""
+┏┳┓     ┏┳┓    
+ ┃ ┏┓┏┓┓ ┃ ┏┓┏┓
+ ┻ ┗┛┛ ┗ ┻ ┗┛┛ {__version__}""",
+    ]
+    print(random.choice(banners))
+
+
+def load_settings() -> dict:
     """
     Loads settings from /settings/settings.json
 
@@ -42,9 +66,18 @@ def settings() -> dict:
 
 def usage():
     return """
+    Local Installation
+    ==================
     tor2tor http://example.onion
     
-    docker run --tty --volume rly0nheart/tor2tor http://example.onion
+    Alternatively
+    -------------
+    t2t http://example.onion
+    
+    
+    Docker Container
+    ================
+    docker run --tty --volume $PWD/tor2tor:/root/tor2tor rly0nheart/tor2tor http://example.onion
     """
 
 
@@ -88,24 +121,6 @@ def create_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("-v", "--version", version=__version__, action="version")
     return parser
-
-
-def show_banner():
-    """
-    Prints a random banner from a list of 2 banners.
-    """
-    banners = [
-        f"""
-┌┬┐┌─┐┬─┐┌─┐┌┬┐┌─┐┬─┐
- │ │ │├┬┘┌─┘ │ │ │├┬┘
- ┴ └─┘┴└─└─┘ ┴ └─┘┴└─ {__version__}""",
-        f"""
-┌┬┐┌─┐┌┬┐
- │ ┌─┘ │ 
- ┴ └─┘ ┴ {__version__}""",
-    ]
-
-    print(random.choice(banners))
 
 
 def set_loglevel(debug_mode: bool) -> logging.getLogger:
@@ -268,7 +283,7 @@ def tor_service(command: str):
 
     try:
         if os.name == "nt":
-            tor_path = os.path.join(PROGRAM_DIRECTORY, settings().get("tor.exe"))
+            tor_path = os.path.join(PROGRAM_DIRECTORY, load_settings().get("tor.exe"))
 
             if command == "start":
                 log.info(f"Starting {tor_path}...")
