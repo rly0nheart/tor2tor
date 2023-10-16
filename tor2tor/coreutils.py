@@ -21,7 +21,31 @@ from . import __author__, __about__, __version__
 PROGRAM_DIRECTORY = os.path.expanduser(os.path.join("~", "tor2tor"))
 
 
-def settings() -> dict:
+def show_banner():
+    """
+    Prints a random banner from a list of 4 ascii banners.
+    """
+    banners = [
+        f"""
+     ┏┓     
+╋┏┓┏┓┏┛╋┏┓┏┓
+┗┗┛┛ ┗┛┗┗┛┛ {__version__}""",
+        f"""  
+╋┏┓┏┓┓╋┏┓┏┓
+┗┗┛┛ ┗┗┗┛┛ {__version__}""",
+        f"""
+┏┳┓    ┏┓┏┳┓    
+ ┃ ┏┓┏┓┏┛ ┃ ┏┓┏┓
+ ┻ ┗┛┛ ┗┛ ┻ ┗┛┛ {__version__}""",
+        f"""
+┏┳┓     ┏┳┓    
+ ┃ ┏┓┏┓┓ ┃ ┏┓┏┓
+ ┻ ┗┛┛ ┗ ┻ ┗┛┛ {__version__}""",
+    ]
+    print(random.choice(banners))
+
+
+def load_settings() -> dict:
     """
     Loads settings from /settings/settings.json
 
@@ -42,9 +66,18 @@ def settings() -> dict:
 
 def usage():
     return """
+    Local Installation
+    ==================
     tor2tor http://example.onion
     
-    docker run --tty --volume rly0nheart/tor2tor http://example.onion
+    Alternatively
+    -------------
+    t2t http://example.onion
+    
+    
+    Docker Container
+    ================
+    docker run --tty --volume $PWD/tor2tor:/root/tor2tor rly0nheart/tor2tor http://example.onion
     """
 
 
@@ -88,24 +121,6 @@ def create_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("-v", "--version", version=__version__, action="version")
     return parser
-
-
-def show_banner():
-    """
-    Prints a random banner from a list of 2 banners.
-    """
-    banners = [
-        f"""
-┌┬┐┌─┐┬─┐┌─┐┌┬┐┌─┐┬─┐
- │ │ │├┬┘┌─┘ │ │ │├┬┘
- ┴ └─┘┴└─└─┘ ┴ └─┘┴└─ {__version__}""",
-        f"""
-┌┬┐┌─┐┌┬┐
- │ ┌─┘ │ 
- ┴ └─┘ ┴ {__version__}""",
-    ]
-
-    print(random.choice(banners))
 
 
 def set_loglevel(debug_mode: bool) -> logging.getLogger:
@@ -204,15 +219,15 @@ def path_finder(url: str):
     )
 
 
-def convert_timestamp_to_utc(timestamp: float) -> datetime:
+def convert_timestamp_to_datetime(timestamp: float) -> datetime:
     """
-    Converts a Unix timestamp to a datetime object in UTC.
+    Converts a Unix timestamp to a datetime object.
 
     :param timestamp: The Unix timestamp to be converted, given as a float.
-    :return: A datetime object representing the converted time in UTC.
+    :return: A datetime object.
     """
-    utc_from_timestamp = datetime.utcfromtimestamp(timestamp)
-    return utc_from_timestamp
+    datetime_from_timestamp = datetime.fromtimestamp(timestamp)
+    return datetime_from_timestamp
 
 
 def get_file_info(filename: str) -> tuple:
@@ -224,7 +239,7 @@ def get_file_info(filename: str) -> tuple:
     """
     file_size = os.path.getsize(filename=filename)
 
-    created_time = convert_timestamp_to_utc(
+    created_time = convert_timestamp_to_datetime(
         timestamp=os.path.getmtime(filename=filename)
     )
 
@@ -268,7 +283,7 @@ def tor_service(command: str):
 
     try:
         if os.name == "nt":
-            tor_path = os.path.join(PROGRAM_DIRECTORY, settings().get("tor.exe"))
+            tor_path = os.path.join(PROGRAM_DIRECTORY, load_settings().get("tor.exe"))
 
             if command == "start":
                 log.info(f"Starting {tor_path}...")

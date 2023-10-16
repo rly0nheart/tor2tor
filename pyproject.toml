@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "tor2tor"
-version = "0.10.0"
+version = "0.11.0"
 description = "Capture screenshots of onion services on an onion service."
 authors = ["Richard Mwewa <rly0nheart@duck.com>"]
 readme = "README.md"
@@ -22,7 +22,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 rich = "*"
 requests = "*"
 selenium = "*"

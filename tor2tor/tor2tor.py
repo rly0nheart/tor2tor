@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import time
+from datetime import datetime
 from queue import Queue
 from threading import Lock, Thread
 
@@ -12,17 +13,20 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
+from . import __version__
 from .coreutils import (
     log,
     args,
-    settings,
+    tor_service,
     create_table,
+    load_settings,
     get_file_info,
     is_valid_onion,
     PROGRAM_DIRECTORY,
     add_http_to_link,
     construct_output_name,
-    convert_timestamp_to_utc,
+    convert_timestamp_to_datetime,
+    check_updates,
 )
 
 
@@ -37,10 +41,10 @@ class Tor2Tor:
         self.skipped_onions_queue = Queue()
 
         # Initialise tor proxy settings
-        self.socks_host = settings().get("proxy").get("socks5").get("host")
-        self.socks_port = settings().get("proxy").get("socks5").get("port")
-        self.socks_type = settings().get("proxy").get("socks5").get("type")
-        self.socks_version = settings().get("proxy").get("socks5").get("version")
+        self.socks_host = load_settings().get("proxy").get("socks5").get("host")
+        self.socks_port = load_settings().get("proxy").get("socks5").get("port")
+        self.socks_type = load_settings().get("proxy").get("socks5").get("type")
+        self.socks_version = load_settings().get("proxy").get("socks5").get("version")
 
     def firefox_options(self, instance_index: int) -> Options:
         """
@@ -71,7 +75,7 @@ class Tor2Tor:
         # Initialize a new queue to hold the Firefox instances.
         pool = Queue()
 
-        log.info(f"Opening pool with {pool_size} WebDriver instances...")
+        log.info(f"Opening WebDriver pool with {pool_size} instances...")
 
         # Populate the pool with Firefox instances.
         for instance_index, webdriver_instance in enumerate(
@@ -118,58 +122,42 @@ class Tor2Tor:
                 # Get a new task from the queue
                 onion_index, onion = tasks_queue.get()
 
-                # If the task onion is valid, borrow a Firefox instance from the pool
-                # And try to capture it.S
-                if is_valid_onion(url=onion):
-                    driver = firefox_pool.get()
+                driver = firefox_pool.get()
 
-                    # Capture the screenshot
-                    self.capture_onion(
-                        onion_url=onion,
-                        onion_index=onion_index,
-                        driver=driver,
-                        screenshots_table=screenshots_table,
+                # Capture the screenshot
+                self.capture_onion(
+                    onion_url=onion,
+                    onion_index=onion_index,
+                    driver=driver,
+                    screenshots_table=screenshots_table,
+                )
+                self.captured_onions_queue.put(
+                    (
+                        onion_index,
+                        onion,
+                        convert_timestamp_to_datetime(timestamp=time.time()),
                     )
-                    self.captured_onions_queue.put(
-                        (
-                            onion_index,
-                            onion,
-                            convert_timestamp_to_utc(timestamp=time.time()),
-                        )
-                    )
+                )
 
-                    # On successful capture, return the Firefox instance back to the pool and mark the task as done
-                    # Do the same on exception.
-                    firefox_pool.put(driver)
-                    tasks_queue.task_done()
-                else:
-                    log.warning(
-                        f"{onion_index} {onion} does not seem to be a valid onion. Skipping..."
-                    )
-                    # Add the invalid onion to the skipped_onions queue
-                    self.skipped_onions_queue.put(
-                        (
-                            onion_index,
-                            onion,
-                            "[yellow]Invalid onion[/]",
-                            convert_timestamp_to_utc(timestamp=time.time()),
-                        )
-                    )
+                # On successful capture, return the Firefox instance back to the pool and mark the task as done
+                # Do the same on exception.
+                firefox_pool.put(driver)
+                tasks_queue.task_done()
 
             except KeyboardInterrupt:
                 log.warning("User interruption detected ([yellow]Ctrl+C[/])")
                 sys.exit()
             except Exception as e:
                 if args.log_skipped:
-                    log.error(f"{onion_index} Skipping... [yellow]{e}[/]")
+                    log.error(f"{onion_index} [yellow]{e}[/]")
 
                 # Add the skipped onion index, the onion itself, the time it was skipped, and the reason it was skipped
                 self.skipped_onions_queue.put(
                     (
                         onion_index,
                         onion,
-                        f"[red]{e}[/]",
-                        convert_timestamp_to_utc(timestamp=time.time()),
+                        f"[yellow]{e}[/]",
+                        convert_timestamp_to_datetime(timestamp=time.time()),
                     )
                 )
 
@@ -187,7 +175,7 @@ class Tor2Tor:
         Executes the worker method.
 
         :param worker_threads: Number of threads to execute the worker with.
-        :param tasks_queue: he queue containing tasks (websites to capture).
+        :param tasks_queue: The queue containing tasks (websites to capture).
         :param screenshots_table: The table where captured screenshots will be added.
         :param firefox_pool: A pool containing n number of firefox instances.
         """
@@ -324,57 +312,86 @@ class Tor2Tor:
     def execute_scraper(
         self,
         target_onion: str,
-        firefox_pool: Queue,
+        pool_size: int,
         worker_threads: int,
     ):
         """
         Executes the scraper code.
 
         :param target_onion: The onion to scrape.
-        :param firefox_pool: A pool containing firefox instances.
+        :param pool_size: Size of the WebDriver instance pool (default is 3).
         :param worker_threads: Number of threads.
         """
-        # Fetch onion URLs from the provided URL
-        onions = self.get_onions_on_page(onion_url=add_http_to_link(link=target_onion))
+        firefox_pool = None
 
-        # Create a table where capture screenshots will be displayed
-        screenshots_table = create_table(
-            table_title="Screenshots",
-            table_headers=["#", "filename", "size (bytes)", "created"],
-        )
+        start_time = datetime.now()
+        log.info(f"Starting 🧅Tor2Tor {__version__} {start_time}...")
 
-        # Initialize Queue and add tasks
-        tasks_queue = Queue()
+        try:
+            check_updates()
 
-        for onion_index, onion in enumerate(onions, start=1):
-            tasks_queue.put((onion_index, onion))
-            if onion_index == args.limit:
-                # If onion index is equal to the limit set in -l/--limit, break the loop.
-                break
+            tor_service(command="start")  # Start the Tor service.
 
-        self.execute_worker(
-            worker_threads=worker_threads,
-            tasks_queue=tasks_queue,
-            screenshots_table=screenshots_table,
-            firefox_pool=firefox_pool,
-        )
+            # Fetch onion URLs from the provided URL
+            onions = self.get_onions_on_page(
+                onion_url=add_http_to_link(link=target_onion)
+            )
 
-        log.info("DONE!\n")
+            firefox_pool = self.open_firefox_pool(pool_size=pool_size)
 
-        # Print table showing captured screenshots
-        print(screenshots_table)
-        print("\n")
+            # Create a table where capture screenshots will be displayed
+            screenshots_table = create_table(
+                table_title="Screenshots",
+                table_headers=["#", "filename", "size (bytes)", "timestamp"],
+            )
 
-        # Print the summary tables for captured and skipped onions
-        captured_onions, skipped_onions = self.onion_summary_tables(
-            captured_onions=list(self.captured_onions_queue.queue),
-            skipped_onions=list(self.skipped_onions_queue.queue),
-        )
-        log.info(f"{len(self.captured_onions_queue.queue)} onions captured.")
-        print(captured_onions)
+            # Initialize Queue and add tasks
+            tasks_queue = Queue()
 
-        log.info(f"{len(self.skipped_onions_queue.queue)} onions skipped.")
-        print(skipped_onions)
+            for onion_index, onion in enumerate(onions, start=1):
+                tasks_queue.put((onion_index, onion))
+
+                if onion_index == args.limit:
+                    # If onion index is equal to the limit set in -l/--limit, break the loop.
+                    break
+
+            self.execute_worker(
+                worker_threads=worker_threads,
+                tasks_queue=tasks_queue,
+                screenshots_table=screenshots_table,
+                firefox_pool=firefox_pool,
+            )
+
+            log.info("DONE!\n")
+
+            # Print table showing captured screenshots
+            print(screenshots_table)
+            print("\n")
+
+            # Print the summary tables for captured and skipped onions
+            captured_onions, skipped_onions = self.onion_summary_tables(
+                captured_onions=list(self.captured_onions_queue.queue),
+                skipped_onions=list(self.skipped_onions_queue.queue),
+            )
+
+            log.info(f"{len(self.captured_onions_queue.queue)} onions captured.")
+            print(captured_onions)
+
+            log.info(f"{len(self.skipped_onions_queue.queue)} onions skipped.")
+            print(skipped_onions)
+
+        except KeyboardInterrupt:
+            log.warning(f"User Interruption detected ([yellow]Ctrl+C[/])")
+            sys.exit()
+        except Exception as e:
+            log.error(f"An error occurred: [red]{e}[/]")
+            sys.exit()
+        finally:
+            if firefox_pool is not None:
+                self.close_firefox_pool(pool=firefox_pool)
+
+            tor_service(command="stop")  # Stop the Tor service.
+            log.info(f"Stopped in {datetime.now() - start_time} seconds.")
 
     @staticmethod
     def onion_summary_tables(
@@ -399,7 +416,7 @@ class Tor2Tor:
 
         # Create a table of captured onions
         captured_onions_table = create_table(
-            table_headers=["#", "index", "onion", "captured at"],
+            table_headers=["#", "index", "onion", "timestamp"],
         )
         for index, captured_onion in enumerate(captured_onions, start=1):
             captured_onions_table.add_row(
