@@ -1,5 +1,5 @@
 # Define URLs for Tor Expert Bundle and GeckoDriver
-$torURL = "https://archive.torproject.org/tor-package-archive/torbrowser/12.5.6/tor-expert-bundle-12.5.6-windows-x86_64.tar.gz"
+$torURL = "https://archive.torproject.org/tor-package-archive/torbrowser/13.0/tor-expert-bundle-13.0-windows-x86_64.tar.gz"
 $geckoURL = "https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-win64.zip"
 
 # Define target directories for installation
