@@ -134,7 +134,7 @@ def set_loglevel(debug_mode: bool) -> logging.getLogger:
         level="NOTSET" if debug_mode else "INFO",
         format="%(message)s",
         handlers=[
-            RichHandler(markup=True, log_time_format="%H:%M:%S", show_level=True)
+            RichHandler(markup=True, log_time_format="%H:%M:%S", show_level=debug_mode)
         ],
     )
     return logging.getLogger("Tor2Tor")
