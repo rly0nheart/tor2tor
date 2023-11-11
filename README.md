@@ -1,6 +1,4 @@
-![tor2tor](https://github.com/rly0nheart/tor2tor/assets/74001397/e3ba4083-c249-4096-8dea-439c54462246)
 ![banner](https://github.com/rly0nheart/tor2tor/assets/74001397/3ce19824-9414-4828-a770-081b0b0ae857)
-
 
 **Tor2Tor** scrapes a given onion link and captures screenshots of all links available on it.
 
@@ -63,6 +61,7 @@
 
 
 # Usage ⌨️
+![help](https://github.com/rly0nheart/tor2tor/assets/74001397/59b2c649-90f8-4954-985a-6afed3ed790e)
 <details>
   <summary>🐧 Linux</summary>
   
