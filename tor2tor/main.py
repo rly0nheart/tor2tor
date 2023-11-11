@@ -1,7 +1,6 @@
 from .tor2tor import log, args, Tor2Tor
 from .coreutils import (
     path_finder,
-    show_banner,
     is_valid_onion,
 )
 
@@ -11,11 +10,15 @@ def execute_tor2tor():
     tor2tor = Tor2Tor()
 
     if is_valid_onion(url=target_onion):
+        print("""
+┏┳┓     ┏┳┓    
+ ┃ ┏┓┏┓┓ ┃ ┏┓┏┓
+ ┻ ┗┛┛ ┗ ┻ ┗┛┛ """
+              )
         path_finder(
             url=target_onion
         )  # Create a directory with the onion link as the name.
 
-        show_banner()
         tor2tor.execute_scraper(
             target_onion=target_onion,
             pool_size=args.pool,
