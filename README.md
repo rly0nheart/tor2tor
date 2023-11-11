@@ -1,5 +1,5 @@
+![usage](https://github.com/rly0nheart/tor2tor/assets/74001397/b62b5775-ddca-448a-a556-c5b8cd05a6e0)
 ![banner](https://github.com/rly0nheart/tor2tor/assets/74001397/3ce19824-9414-4828-a770-081b0b0ae857)
-
 
 **Tor2Tor** scrapes a given onion link and captures screenshots of all links available on it.
 
@@ -236,7 +236,7 @@ There's a dedicated repository of onion screenshots captured with **Tor2Tor** at
 - This image is tagged as `latest` on Docker Hub, indicating it's the most stable release.
 
 ***
-<a href="https://www.buymeacoffee.com/_rly0nheart"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=_rly0nheart&button_colour=40DCA5&font_colour=ffffff&font_family=Comic&outline_colour=000000&coffee_colour=FFDD00" /></a>
+![me](https://github.com/rly0nheart/tor2tor/assets/74001397/97bf7845-db43-4fd0-87bd-04e8b6b02e74)
 
-![me](https://github.com/rly0nheart/tor2tor/assets/74001397/9f5a2b22-d98a-4be1-80be-8ad7c53c6fab)
+
 

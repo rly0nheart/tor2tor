@@ -2,7 +2,6 @@ import os
 import re
 import time
 import json
-import random
 import logging
 import argparse
 import subprocess
@@ -14,35 +13,12 @@ from rich import print
 from rich.table import Table
 from rich.markdown import Markdown
 from rich.logging import RichHandler
+from rich_argparse import RichHelpFormatter
 
 from . import __author__, __about__, __version__
 
 # Construct path to the user's home directory
 PROGRAM_DIRECTORY = os.path.expanduser(os.path.join("~", "tor2tor"))
-
-
-def show_banner():
-    """
-    Prints a random banner from a list of 4 ascii banners.
-    """
-    banners = [
-        f"""
-     ┏┓     
-╋┏┓┏┓┏┛╋┏┓┏┓
-┗┗┛┛ ┗┛┗┗┛┛ {__version__}""",
-        f"""  
-╋┏┓┏┓┓╋┏┓┏┓
-┗┗┛┛ ┗┗┗┛┛ {__version__}""",
-        f"""
-┏┳┓    ┏┓┏┳┓    
- ┃ ┏┓┏┓┏┛ ┃ ┏┓┏┓
- ┻ ┗┛┛ ┗┛ ┻ ┗┛┛ {__version__}""",
-        f"""
-┏┳┓     ┏┳┓    
- ┃ ┏┓┏┓┓ ┃ ┏┓┏┓
- ┻ ┗┛┛ ┗ ┻ ┗┛┛ {__version__}""",
-    ]
-    print(random.choice(banners))
 
 
 def load_settings() -> dict:
@@ -64,28 +40,11 @@ def load_settings() -> dict:
     return data
 
 
-def usage():
-    return """
-    Local Installation
-    ==================
-    tor2tor http://example.onion
-    
-    Alternatively
-    -------------
-    t2t http://example.onion
-    
-    
-    Docker Container
-    ================
-    docker run --tty --volume $PWD/tor2tor:/root/tor2tor rly0nheart/tor2tor http://example.onion
-    """
-
-
 def create_parser() -> argparse.ArgumentParser:
+    from . import __version__, __epilog__, __description__
     parser = argparse.ArgumentParser(
-        description=f"tor2tor - by {__author__} | {__about__}",
-        usage=usage(),
-        epilog="Capture screenshots of onion services on an onion service.",
+        description=Markdown(__description__, "argparse.text"),
+        epilog=Markdown(__epilog__), formatter_class=RichHelpFormatter
     )
     parser.add_argument("onion", help="onion url to scrape")
     parser.add_argument(
