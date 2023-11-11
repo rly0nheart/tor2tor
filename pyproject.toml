@@ -25,6 +25,7 @@ classifiers = [
 python = "^3.10"
 rich = "*"
 requests = "*"
+rich-argparse = "*"
 selenium = "*"
 BeautifulSoup4 = "*"
 
