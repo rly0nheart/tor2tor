@@ -12,7 +12,7 @@ RUN apt-get update && \
     tor && \
     rm -fr /var/lib/apt/lists/*
 
-RUN curl -L https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz | \
+RUN curl -L https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz | \
     tar xz -C /usr/bin && \
     apt-get purge -y \
     ca-certificates \
