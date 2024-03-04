@@ -1,6 +1,6 @@
 __author__ = "Richard Mwewa"
 __about__ = "https://about.me/rly0nheart"
-__version__ = "0.13.0"
+__version__ = "0.14.0"
 __description__ = """
 # Tor2Tor
 > **Tor2Tor** scrapes a given onion link and captures screenshots of all links available on it.

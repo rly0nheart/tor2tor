@@ -54,6 +54,7 @@ class Tor2Tor:
         :returns: A Selenium WebDriver Options object with preset configurations.
         """
         options = Options()
+        options.add_argument("--incognito")
         if args.headless:
             options.add_argument("--headless")
             log.info(f"Running headless on WebDriver instance {instance_index}...")
